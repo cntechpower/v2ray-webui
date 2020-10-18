@@ -1,18 +1,32 @@
 package main
 
 import (
-	"fmt"
-
+	"cntechpower.com/api-server/handler"
+	"cntechpower.com/api-server/log"
+	"cntechpower.com/api-server/persist"
 	"github.com/gin-gonic/gin"
 )
 
+var mysqlDSN = "api:api@tcp(127.0.0.1:3306)/api?charset=utf8mb4&parseTime=True&loc=Local"
+var redisDSN = "127.0.0.1:6379"
+
 func main() {
-	fmt.Printf("hello world")
+	log.InitLogger("")
+	if err := persist.Init(mysqlDSN, redisDSN); err != nil {
+		panic(err)
+	}
 	engine := gin.New()
-	engine.GET("/", func(c *gin.Context) {
-		c.JSON(200, `{"message": "success"}`)
-	})
-	if err := engine.Run("0.0.0.0:8080"); err != nil {
+	//proxy handler
+	{
+		proxyGroup := engine.Group("/proxy")
+		webSiteGroup := proxyGroup.Group("/website")
+		webSiteGroup.GET("/list", handler.ListCustomProxyWebsites)
+		webSiteGroup.GET("/listv2", handler.ListCustomProxyWebsitesWithoutCache)
+		webSiteGroup.POST("/add", handler.AddCustomProxyWebsites)
+		webSiteGroup.POST("/del", handler.DelCustomProxyWebsites)
+	}
+	engine.Use()
+	if err := engine.Run("0.0.0.0:8888"); err != nil {
 		panic(err)
 	}
 }
