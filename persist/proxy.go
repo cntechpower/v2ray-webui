@@ -30,10 +30,10 @@ func GetAllCustomProxyWebsites() ([]*model.ProxyWebSite, error) {
 		log.Errorf(h, "query redis fail: %v", err)
 	}
 	if err == nil && len(res) == len(keysSlice) {
-		log.Infof(h, "cache hit")
+		//log.Infof(h, "cache hit")
 		return res, nil
 	}
-	log.Infof(h, "cache miss")
+	//log.Infof(h, "cache miss")
 	if err := db.Find(&res).Error; err != nil {
 		return nil, err
 	}
