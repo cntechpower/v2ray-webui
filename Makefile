@@ -17,4 +17,4 @@ build:
 upload: build
 	tar -czvf $(PROJECT_NAME)-$(VERSION).tar.gz bin/
 	curl -T  $(PROJECT_NAME)-$(VERSION).tar.gz -u ftp:ftp ftp://10.0.0.2/ci/$(PROJECT_NAME)/
-	curl -T  $(PROJECT_NAME)-latest.tar.gz -u ftp:ftp ftp://10.0.0.2/ci/$(PROJECT_NAME)/
+	curl -T  $(PROJECT_NAME)-$(VERSION).tar.gz -u ftp:ftp ftp://10.0.0.2/ci/$(PROJECT_NAME)/$(PROJECT_NAME)-latest.tar.gz
