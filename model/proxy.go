@@ -13,6 +13,7 @@ type ProxyWebSite struct {
 }
 
 type ProxyWebSiteToRender struct {
+	Id         uint
 	WebSiteUrl string `validate:"required"`
 }
 
@@ -28,7 +29,10 @@ func (p *ProxyWebSite) UnmarshalBinary(data []byte) error {
 }
 
 func (p *ProxyWebSite) Render() *ProxyWebSiteToRender {
-	return &ProxyWebSiteToRender{WebSiteUrl: p.WebSiteUrl}
+	return &ProxyWebSiteToRender{
+		Id:         p.ID,
+		WebSiteUrl: p.WebSiteUrl,
+	}
 }
 
 func RenderProxyWebSites(before []*ProxyWebSite) []*ProxyWebSiteToRender {
