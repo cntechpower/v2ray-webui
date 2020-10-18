@@ -13,7 +13,7 @@ import (
 
 const cacheFromAllAllCustomProxyWebsitesKey = "proxy_web_site_keys"
 
-const cacheForAllCustomProxyWebsites = "proxy_web_site_keys"
+const cacheForAllCustomProxyWebsites = "proxy_web_site_values"
 
 func GetAllCustomProxyWebsitesInOneCache() ([]*model.ProxyWebSite, error) {
 	h := log.NewHeader("GetAllCustomProxyWebsitesInOneCache")
@@ -29,7 +29,7 @@ func GetAllCustomProxyWebsitesInOneCache() ([]*model.ProxyWebSite, error) {
 	}
 	bytes, err = json.Marshal(res)
 	if err == nil {
-		if err := cache.Set(context.Background(), cacheFromAllAllCustomProxyWebsitesKey, bytes, time.Minute).Err(); err != nil {
+		if err := cache.Set(context.Background(), cacheForAllCustomProxyWebsites, bytes, time.Minute).Err(); err != nil {
 			log.Errorf(h, "set cache to redis error: %v", err)
 		}
 	} else {
