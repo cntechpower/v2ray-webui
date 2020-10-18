@@ -49,6 +49,7 @@ func run() error {
 		webSiteGroup := proxyGroup.Group("/website")
 		webSiteGroup.GET("/list", handler.ListCustomProxyWebsites)
 		webSiteGroup.GET("/listv2", handler.ListCustomProxyWebsitesWithoutCache)
+		webSiteGroup.GET("/listv3", handler.ListCustomProxyWebsitesInOneCache)
 		webSiteGroup.POST("/add", handler.AddCustomProxyWebsites)
 		webSiteGroup.POST("/del", handler.DelCustomProxyWebsites)
 	}
