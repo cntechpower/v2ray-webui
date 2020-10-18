@@ -2,6 +2,7 @@ package persist
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 	"time"
 
@@ -11,6 +12,32 @@ import (
 )
 
 const cacheFromAllAllCustomProxyWebsitesKey = "proxy_web_site_keys"
+
+const cacheForAllCustomProxyWebsites = "proxy_web_site_keys"
+
+func GetAllCustomProxyWebsitesInOneCache() ([]*model.ProxyWebSite, error) {
+	h := log.NewHeader("GetAllCustomProxyWebsitesInOneCache")
+	res := make([]*model.ProxyWebSite, 0)
+	bytes, err := cache.Get(context.Background(), cacheForAllCustomProxyWebsites).Bytes()
+	if err == nil {
+		//log.Infof(h, "from cache")
+		return res, json.Unmarshal(bytes, &res)
+	}
+	//log.Infof(h, "into db")
+	if err := db.Find(&res).Error; err != nil {
+		return nil, err
+	}
+	bytes, err = json.Marshal(res)
+	if err == nil {
+		if err := cache.Set(context.Background(), cacheFromAllAllCustomProxyWebsitesKey, bytes, time.Minute).Err(); err != nil {
+			log.Errorf(h, "set cache to redis error: %v", err)
+		}
+	} else {
+		log.Errorf(h, "marshal list error: %v", err)
+	}
+
+	return res, nil
+}
 
 func GetAllCustomProxyWebsites() ([]*model.ProxyWebSite, error) {
 	h := log.NewHeader("GetAllCustomProxyWebsites")

@@ -21,6 +21,14 @@ func ListCustomProxyWebsites(c *gin.Context) {
 	c.JSON(http.StatusOK, model.RenderProxyWebSites(res))
 }
 
+func ListCustomProxyWebsitesInOneCache(c *gin.Context) {
+	res, err := persist.GetAllCustomProxyWebsitesInOneCache()
+	if err != nil {
+		errorWith500(c, err)
+	}
+	c.JSON(http.StatusOK, model.RenderProxyWebSites(res))
+}
+
 func ListCustomProxyWebsitesWithoutCache(c *gin.Context) {
 	res := make([]*model.ProxyWebSite, 0)
 	err := persist.MySQL().Find(&res).Error
