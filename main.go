@@ -46,12 +46,26 @@ func run() error {
 	//proxy handler
 	{
 		proxyGroup := engine.Group("/proxy")
-		webSiteGroup := proxyGroup.Group("/website")
-		webSiteGroup.GET("/list", handler.ListCustomProxyWebsites)
-		webSiteGroup.GET("/listv2", handler.ListCustomProxyWebsitesWithoutCache)
-		webSiteGroup.GET("/listv3", handler.ListCustomProxyWebsitesInOneCache)
-		webSiteGroup.POST("/add", handler.AddCustomProxyWebsites)
-		webSiteGroup.POST("/del", handler.DelCustomProxyWebsites)
+		h, err := handler.NewProxyHandler()
+		if err != nil {
+			return err
+		}
+		{
+			webSiteGroup := proxyGroup.Group("/website")
+			webSiteGroup.GET("/list", h.ListCustomProxyWebsites)
+			webSiteGroup.GET("/listv2", h.ListCustomProxyWebsitesWithoutCache)
+			webSiteGroup.GET("/listv3", h.ListCustomProxyWebsitesInOneCache)
+			webSiteGroup.POST("/add", h.AddCustomProxyWebsites)
+			webSiteGroup.POST("/del", h.DelCustomProxyWebsites)
+		}
+		{
+			pacGroup := proxyGroup.Group("/pac")
+			pacGroup.GET("", h.GetCurrentPAC)
+			pacGroup.POST("/cron", h.UpdateCron)
+			pacGroup.GET("/cron", h.GetCurrentCron)
+			pacGroup.POST("/generate", h.ManualGeneratePac)
+		}
+
 	}
 	engine.Use()
 	return engine.Run(bindAddr)
