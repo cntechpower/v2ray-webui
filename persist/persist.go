@@ -45,7 +45,7 @@ func Get(m model.Modeler) error {
 	if err := db.Find(m).Error; err != nil {
 		return err
 	}
-	cache.Set(context.Background(), m.GetCacheKey(), m, time.Minute)
+	cache.Set(context.Background(), m.GetCacheKey(), m, m.GetCacheDuration())
 	return nil
 }
 
@@ -53,7 +53,7 @@ func Create(m model.Modeler) error {
 	if err := db.Create(m).Error; err != nil {
 		return err
 	}
-	cache.Set(context.Background(), m.GetCacheKey(), m, time.Minute)
+	cache.Set(context.Background(), m.GetCacheKey(), m, m.GetCacheDuration())
 	return nil
 }
 
@@ -62,6 +62,14 @@ func Delete(m model.Modeler) error {
 		return err
 	}
 	cache.Del(context.Background(), m.GetCacheKey())
+	return nil
+}
+
+func Save(m model.Modeler) error {
+	if err := db.Save(m).Error; err != nil {
+		return err
+	}
+	cache.Set(context.Background(), m.GetCacheKey(), m, m.GetCacheDuration())
 	return nil
 }
 

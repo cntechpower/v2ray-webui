@@ -1,9 +1,13 @@
 package model
 
-import "encoding"
+import (
+	"encoding"
+	"time"
+)
 
 type Modeler interface {
 	GetCacheKey() string
+	GetCacheDuration() time.Duration
 	encoding.BinaryMarshaler
 	encoding.BinaryUnmarshaler
 }
@@ -11,5 +15,7 @@ type Modeler interface {
 func GetAllModels() []interface{} {
 	return []interface{}{
 		&ProxyWebSite{},
+		&PacContent{},
+		&Config{},
 	}
 }
