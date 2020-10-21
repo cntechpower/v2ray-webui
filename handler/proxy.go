@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 
+	"cntechpower.com/api-server/config"
+
 	"gorm.io/gorm"
 
 	"cntechpower.com/api-server/log"
@@ -55,19 +57,15 @@ func NewProxyHandler() (*ProxyHandler, error) {
 	if err := persist.MySQL().Order("id desc").Limit(1).Find(&currentPac).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
-	config := &model.Config{}
-	if err := persist.MySQL().Find(&config).Error; err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
-	}
 	h := &ProxyHandler{
 		currentPac:  atomic.NewString(currentPac.Content),
-		cronSpec:    atomic.NewString(config.PacGenerateCron),
+		cronSpec:    atomic.NewString(config.Config.ProxyHandlerConfig.PacGenerateCron),
 		cronMu:      sync.Mutex{},
 		cron:        cron.New(cron.WithLogger(NewCronLogger())),
 		cronEntryId: 0,
 	}
-	if config.PacGenerateCron != "" {
-		entryId, err := h.cron.AddFunc(config.PacGenerateCron, func() {
+	if config.Config.ProxyHandlerConfig.PacGenerateCron != "" {
+		entryId, err := h.cron.AddFunc(config.Config.ProxyHandlerConfig.PacGenerateCron, func() {
 			_ = h.updatePacFunc("")
 		})
 		if err != nil {
@@ -162,13 +160,9 @@ func (h *ProxyHandler) UpdateCron(c *gin.Context) {
 		h.cron.Remove(h.cronEntryId)
 	}
 	h.cronEntryId = entryId
-	config := model.NewConfig()
-	if err := persist.Get(config); err != nil && err != gorm.ErrRecordNotFound {
-		errorWith500(c, err)
-		return
-	}
-	config.PacGenerateCron = cronSpec
-	if err := persist.MySQL().Where("type=?", "global").Save(config).Error; err != nil {
+
+	config.Config.ProxyHandlerConfig.PacGenerateCron = cronSpec
+	if err := config.Config.Save("./api.config"); err != nil {
 		errorWith500(c, err)
 		return
 	}

@@ -16,6 +16,5 @@ func GetAllModels() []interface{} {
 	return []interface{}{
 		&ProxyWebSite{},
 		&PacContent{},
-		&Config{},
 	}
 }
