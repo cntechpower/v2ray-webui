@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cntechpower.com/api-server/config"
 	"cntechpower.com/api-server/handler"
 	"cntechpower.com/api-server/log"
 	"cntechpower.com/api-server/persist"
@@ -8,10 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var mysqlDSN string
-var redisDSN string
 var version string
-var bindAddr string
+var configFilePath string
 
 func main() {
 
@@ -25,12 +24,16 @@ Version: ` + version,
 			return run()
 		},
 	}
-	rootCmd.PersistentFlags().StringVarP(&mysqlDSN, "mysql", "m",
-		"api:api@tcp(127.0.0.1:3306)/api?charset=utf8mb4&parseTime=True&loc=Local", "mysql dsn")
-	rootCmd.PersistentFlags().StringVarP(&redisDSN, "redis", "r",
-		"127.0.0.1:6379", "redis dsn")
-	rootCmd.PersistentFlags().StringVarP(&bindAddr, "bind", "b",
-		"0.0.0.0:8888", "bind address")
+
+	var configCmd = &cobra.Command{
+		Use:   "config",
+		Short: "api config interface",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return config.Default().Save("./api.config")
+		},
+	}
+	rootCmd.AddCommand(configCmd)
+	rootCmd.PersistentFlags().StringVarP(&configFilePath, "config", "c", "api.config", "config file path")
 	if err := rootCmd.Execute(); err != nil {
 		panic(err)
 	}
@@ -39,7 +42,8 @@ Version: ` + version,
 
 func run() error {
 	log.InitLogger("")
-	if err := persist.Init(mysqlDSN, redisDSN); err != nil {
+	config.Init(configFilePath)
+	if err := persist.Init(config.Config.MysqlDSN, config.Config.RedisDSN); err != nil {
 		panic(err)
 	}
 	engine := gin.New()
@@ -68,5 +72,5 @@ func run() error {
 
 	}
 	engine.Use()
-	return engine.Run(bindAddr)
+	return engine.Run(config.Config.ListenAddr)
 }
