@@ -21,4 +21,5 @@ require (
 	gopkg.in/yaml.v2 v2.3.0
 	gorm.io/driver/mysql v1.0.2
 	gorm.io/gorm v1.20.2
+	v2ray.com/core v4.19.1+incompatible
 )

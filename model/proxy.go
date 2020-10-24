@@ -81,3 +81,62 @@ func (c *PacContent) MarshalBinary() ([]byte, error) {
 func (c *PacContent) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, c)
 }
+
+type V2rayServer struct {
+	Id             int64  `json:"primary_key"`
+	SubscriptionId int64  `json:"subscription_id"`
+	Host           string `json:"host"`
+	Path           string `json:"path"`
+	TLS            string `json:"tls"`
+	Address        string `json:"add"`
+	Port           int64  `json:"port"`
+	Aid            int64  `json:"aid"`
+	Net            string `json:"net"`
+	Type           string `json:"type"`
+	V              string `json:"v"`
+	Name           string `json:"ps"`
+	ServerId       string `json:"id"`
+}
+
+func NewV2rayServer(subscriptionId int64) *V2rayServer {
+	return &V2rayServer{SubscriptionId: subscriptionId}
+}
+
+func (s *V2rayServer) GetCacheKey() string {
+	return fmt.Sprintf("pac_content_%v", s.Id)
+}
+
+func (s *V2rayServer) GetCacheDuration() time.Duration {
+	return time.Minute
+}
+
+func (s *V2rayServer) MarshalBinary() ([]byte, error) {
+	return json.Marshal(s)
+}
+func (s *V2rayServer) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, s)
+}
+
+type Subscription struct {
+	Id   int64  `json:"id"`
+	Addr string `json:"subscription_addr"`
+}
+
+func NewSubscription(addr string) *Subscription {
+	return &Subscription{Addr: addr}
+}
+
+func (s *Subscription) GetCacheKey() string {
+	return fmt.Sprintf("pac_content_%v", s.Id)
+}
+
+func (s *Subscription) GetCacheDuration() time.Duration {
+	return time.Minute
+}
+
+func (s *Subscription) MarshalBinary() ([]byte, error) {
+	return json.Marshal(s)
+}
+func (s *Subscription) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, s)
+}
