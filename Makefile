@@ -15,6 +15,8 @@ build:
 	mkdir -p bin/
 	go build ${LDFLAGS} -o bin/$(PROJECT_NAME)
 upload: build
+	cp static/geoip.dat bin/
 	tar -czvf $(PROJECT_NAME)-$(VERSION).tar.gz bin/
 	curl -T  $(PROJECT_NAME)-$(VERSION).tar.gz -u ftp:ftp ftp://10.0.0.2/ci/$(PROJECT_NAME)/
 	curl -T  $(PROJECT_NAME)-$(VERSION).tar.gz -u ftp:ftp ftp://10.0.0.2/ci/$(PROJECT_NAME)/$(PROJECT_NAME)-latest.tar.gz
+	rm -rf bin/geoip.dat

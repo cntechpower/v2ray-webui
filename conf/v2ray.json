@@ -1,0 +1,120 @@
+{
+  "inbounds": [
+    {
+      "port": 1081,
+      "listen": "0.0.0.0",
+      "protocol": "socks",
+      "settings": {
+        "udp": true
+      }
+    },
+    {
+      "port": 1082,
+      "protocol": "dokodemo-door",
+      "settings": {
+        "network": "tcp,udp",
+        "followRedirect": true,
+        "timeout": 30
+      }
+    },
+    {
+      "port": 1083,
+      "protocol": "http",
+      "allowTransparent": false,
+      "userLevel": 0
+    }
+  ],
+  "log": {
+    "error": "v2ray_error.log",
+    "loglevel": "warning",
+    "access": "v2ray_access.log"
+  },
+  "outbounds": [
+    {
+      "sendThrough": "0.0.0.0",
+      "mux": {
+        "enabled": false,
+        "concurrency": 8
+      },
+      "protocol": "vmess",
+      "settings": {
+        "vnext": [
+          {
+            "address": "v2losdmit1.doubledou.win",
+            "users": [
+              {
+                "id": "ff99e49a-3657-3e4d-bfcc-0df8a4ed8b17",
+                "alterId": 2,
+                "security": "auto",
+                "level": 0
+              }
+            ],
+            "port": 443
+          }
+        ]
+      },
+      "tag": "USA dmit",
+      "streamSettings": {
+        "wsSettings": {
+          "path": "/v2ray",
+          "headers": {
+            "Host": "v2losdmit1.doubledou.win"
+          }
+        },
+        "quicSettings": {
+          "key": "",
+          "header": {
+            "type": "none"
+          },
+          "security": "none"
+        },
+        "tlsSettings": {
+          "allowInsecure": false,
+          "alpn": [
+            "http/1.1"
+          ],
+          "serverName": "v2losdmit1.doubledou.win",
+          "allowInsecureCiphers": false
+        },
+        "sockopt": {},
+        "httpSettings": {
+          "path": "",
+          "host": [
+            ""
+          ]
+        },
+        "tcpSettings": {
+          "header": {
+            "type": "none"
+          }
+        },
+        "kcpSettings": {
+          "header": {
+            "type": "none"
+          },
+          "mtu": 1350,
+          "congestion": false,
+          "tti": 20,
+          "uplinkCapacity": 5,
+          "writeBufferSize": 1,
+          "readBufferSize": 1,
+          "downlinkCapacity": 20
+        },
+        "security": "tls",
+        "network": "ws"
+      }
+    }
+  ],
+  "routing": {
+    "domainStrategy": "IPOnDemand",
+    "rules": [
+      {
+        "type": "field",
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "direct"
+      }
+    ]
+  }
+}
