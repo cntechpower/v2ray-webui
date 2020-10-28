@@ -6,12 +6,14 @@ import (
 	"cntechpower.com/api-server/log"
 	"cntechpower.com/api-server/persist"
 	"cntechpower.com/api-server/util"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 )
 
 var version string
 var configFilePath string
+var v2rayConfigTemplatePath string
 
 func main() {
 
@@ -33,6 +35,7 @@ Version: ` + version,
 	}
 	rootCmd.AddCommand(configCmd)
 	rootCmd.PersistentFlags().StringVarP(&configFilePath, "config", "c", "./conf/api.config", "config file path")
+	rootCmd.PersistentFlags().StringVarP(&v2rayConfigTemplatePath, "vtemplate", "v", "./conf/v2ray.json", "v2ray config template file path")
 	if err := rootCmd.Execute(); err != nil {
 		panic(err)
 	}
@@ -47,13 +50,36 @@ func run(_ *cobra.Command, _ []string) {
 		panic(err)
 	}
 	engine := gin.New()
+	//engine.Use(func(c *gin.Context) {
+	//	c.Next()
+	//	errors := c.Errors.ByType(gin.ErrorTypeAny)
+	//	if len(errors) > 0 {
+	//		c.JSON(c.Writer.Status(), model.GenericStatus{
+	//			Code:    c.Writer.Status(),
+	//			Message: errors.String(),
+	//		})
+	//		c.Writer.Header().Set("Content-Type", "application/json")
+	//		c.Abort()
+	//	}
+	//})
+	engine.Use(gin.ErrorLogger())
 	if !config.Config.DebugMode {
 		gin.SetMode(gin.ReleaseMode)
+	} else {
+		//debug mode, set no cors check.
+		log.Infof(h, "running in debug mode, turn of cors check.")
+		engine.Use(cors.New(cors.Config{
+			AllowAllOrigins:        true,
+			AllowWildcard:          true,
+			AllowBrowserExtensions: true,
+			AllowWebSockets:        true,
+			AllowFiles:             true,
+		}))
 	}
 	tearDownFuncs := make([]func(), 0)
 	tearDownFuncs = append(tearDownFuncs,
 		handler.AddProxyHandler(engine),
-		handler.AddV2rayHandler(engine))
+		handler.AddV2rayHandler(engine, v2rayConfigTemplatePath))
 	httpExistChan := make(chan error)
 	go func() {
 		httpExistChan <- engine.Run(config.Config.ListenAddr)

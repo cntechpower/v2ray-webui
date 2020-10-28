@@ -40,10 +40,10 @@
       "settings": {
         "vnext": [
           {
-            "address": "{serverName}",
+            "address": "v2losdmit1.doubledou.win",
             "users": [
               {
-                "id": "{serverId}",
+                "id": "ff99e49a-3657-3e4d-bfcc-0df8a4ed8b17",
                 "alterId": 2,
                 "security": "auto",
                 "level": 0
@@ -56,9 +56,9 @@
       "tag": "USA dmit",
       "streamSettings": {
         "wsSettings": {
-          "path": "{serverPath}",
+          "path": "/v2ray",
           "headers": {
-            "Host": "{serverName}"
+            "Host": "v2losdmit1.doubledou.win"
           }
         },
         "quicSettings": {
@@ -73,7 +73,7 @@
           "alpn": [
             "http/1.1"
           ],
-          "serverName": "{serverName}",
+          "serverName": "v2losdmit1.doubledou.win",
           "allowInsecureCiphers": false
         },
         "sockopt": {},
