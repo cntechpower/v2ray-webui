@@ -14,9 +14,9 @@ type Modeler interface {
 
 func GetAllModels() []interface{} {
 	return []interface{}{
-		&ProxyWebSite{},
+		&PacWebSite{},
 		&PacContent{},
-		&V2rayServer{},
+		&V2rayNode{},
 		&Subscription{},
 	}
 }
