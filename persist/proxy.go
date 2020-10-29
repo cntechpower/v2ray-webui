@@ -30,7 +30,7 @@ func GetAllCustomProxyWebsitesInOneCache() ([]*model.PacWebSite, error) {
 	}
 	bytes, err := json.Marshal(res)
 	if err == nil && cache != nil {
-		if err := cache.Set(context.Background(), cacheForAllCustomProxyWebsites, bytes, time.Minute).Err(); err != nil {
+		if err := cache.Set(context.Background(), cacheForAllCustomProxyWebsites, bytes, time.Second*3).Err(); err != nil {
 			log.Errorf(h, "set cache to redis error: %v", err)
 		}
 	} else {
@@ -69,12 +69,12 @@ func GetAllCustomProxyWebsites() ([]*model.PacWebSite, error) {
 	cacheKeys := make([]string, 0)
 	if cache != nil {
 		for _, backToDBModeler := range res {
-			if err := cache.Set(context.Background(), backToDBModeler.GetCacheKey(), backToDBModeler, time.Minute).Err(); err != nil {
+			if err := cache.Set(context.Background(), backToDBModeler.GetCacheKey(), backToDBModeler, time.Second*3).Err(); err != nil {
 				log.Errorf(h, "set cache to redis error %v", err)
 			}
 			cacheKeys = append(cacheKeys, backToDBModeler.GetCacheKey())
 		}
-		if err := cache.Set(context.Background(), cacheFromAllAllCustomProxyWebsitesKey, strings.Join(cacheKeys, ","), time.Minute).Err(); err != nil {
+		if err := cache.Set(context.Background(), cacheFromAllAllCustomProxyWebsitesKey, strings.Join(cacheKeys, ","), time.Second*3).Err(); err != nil {
 			log.Errorf(h, "set all cache keys to redis error %v", err)
 		}
 	}

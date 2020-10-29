@@ -14,50 +14,16 @@ import (
 	"time"
 
 	"github.com/go-ping/ping"
-
 	"go.uber.org/atomic"
-
-	"cntechpower.com/api-server/model"
-	"cntechpower.com/api-server/model/params"
-	"cntechpower.com/api-server/persist"
-
-	"cntechpower.com/api-server/log"
-
-	"github.com/gin-gonic/gin"
-
 	v2ray "v2ray.com/core"
 	_ "v2ray.com/core/app/proxyman/inbound"
 	_ "v2ray.com/core/app/proxyman/outbound"
 	v2rayConf "v2ray.com/core/infra/conf/serial"
+
+	"cntechpower.com/api-server/log"
+	"cntechpower.com/api-server/model"
+	"cntechpower.com/api-server/persist"
 )
-
-func AddV2rayHandler(engine *gin.Engine, templateConfigFilePath string) (tearDown func()) {
-	h, err := NewV2rayHandler(templateConfigFilePath)
-	if err != nil {
-		panic(err)
-	}
-
-	v2rayGroup := engine.Group("/v2ray")
-	v2rayGroup.POST("/start", h.GenericWrapper(h.StartV2ray))
-	v2rayGroup.POST("/stop", h.GenericWrapper(h.StopV2ray))
-
-	v2rayConfigGroup := v2rayGroup.Group("/config")
-	v2rayConfigGroup.POST("/switch_node", h.SwitchNode)
-	v2rayConfigGroup.GET("/get", h.GetConfig)
-	v2rayConfigGroup.POST("/update", h.UpdateConfig)
-
-	subscriptionGroup := v2rayGroup.Group("/subscription")
-	subscriptionGroup.GET("/nodes/list", h.GetAllV2rayNodes)
-	subscriptionGroup.POST("/nodes/ping", h.PingAllV2rayNodes)
-	subscriptionGroup.POST("/add", h.AddSubscription)
-	subscriptionGroup.POST("/delete", h.DelSubscription)
-	subscriptionGroup.GET("/list", h.GetAllSubscriptions)
-	subscriptionGroup.POST("/edit", h.EditSubscription)
-	subscriptionGroup.POST("/refresh", h.RefreshV2raySubscription)
-
-	return h.TearDown
-
-}
 
 type V2rayHandler struct {
 	*baseHandler
@@ -110,16 +76,6 @@ func (h *V2rayHandler) TearDown() {
 	}
 }
 
-func (h *V2rayHandler) SwitchNode(c *gin.Context) {
-	param := &params.V2raySwitchNodeParam{}
-	if err := c.Bind(param); err != nil {
-		return
-	}
-	h.DoFunc(c, func() error {
-		return h.switchNode(param.NodeId)
-	})
-}
-
 func (h *V2rayHandler) validateConfig(config string, node *model.V2rayNode) (*v2ray.Config, error) {
 	header := log.NewHeader("V2rayHandler.validateConfig")
 	config = strings.ReplaceAll(config, "{serverName}", node.Host)
@@ -131,7 +87,7 @@ func (h *V2rayHandler) validateConfig(config string, node *model.V2rayNode) (*v2
 
 }
 
-func (h *V2rayHandler) switchNode(nodeId int64) error {
+func (h *V2rayHandler) SwitchNode(nodeId int64) error {
 	node := model.NewV2rayNode(nodeId, "")
 	if err := persist.Get(node); err != nil {
 		return err
@@ -148,10 +104,6 @@ func (h *V2rayHandler) switchNode(nodeId int64) error {
 		return err
 	}
 	return h.StartV2ray()
-}
-
-func (h *V2rayHandler) GetConfig(c *gin.Context) {
-	c.String(http.StatusOK, h.v2rayConfigTemplateContent)
 }
 
 func (h *V2rayHandler) StartV2ray() error {
@@ -201,123 +153,94 @@ func (h *V2rayHandler) StopV2ray() error {
 	return nil
 }
 
-func (h *V2rayHandler) GetAllV2rayNodes(c *gin.Context) {
+func (h *V2rayHandler) GetAllV2rayNodes() ([]*model.V2rayNode, error) {
 	res := make([]*model.V2rayNode, 0)
-	if err := persist.MySQL().Find(&res).Error; err != nil {
-		errorWith500(c, err)
-		return
-	}
-	c.JSON(http.StatusOK, res)
+	return res, persist.MySQL().Find(&res).Error
 }
 
-func (h *V2rayHandler) AddSubscription(c *gin.Context) {
-	param := &params.AddV2raySubscriptionParam{}
-	if err := c.Bind(param); err != nil {
-		return
-	}
-	h.DoFunc(c, func() error {
-		return persist.Save(model.NewSubscription(param.SubscriptionName, param.SubscriptionAddr))
-	})
+func (h *V2rayHandler) AddSubscription(subscriptionName, subscriptionAddr string) error {
+	return persist.Save(model.NewSubscription(subscriptionName, subscriptionAddr))
 }
 
-func (h *V2rayHandler) DelSubscription(c *gin.Context) {
-	param := &params.V2raySubscriptionIdParam{}
-	if err := c.Bind(param); err != nil {
-		return
-	}
-	h.DoFunc(c, func() error {
-		return persist.Delete(&model.Subscription{Id: param.SubscriptionId})
-	})
+func (h *V2rayHandler) DelSubscription(subscriptionId int64) error {
+	return persist.Delete(&model.Subscription{Id: subscriptionId})
+
 }
 
-func (h *V2rayHandler) PingAllV2rayNodes(c *gin.Context) {
+func (h *V2rayHandler) PingAllV2rayNodes() error {
 	header := log.NewHeader("PingAllV2rayNodes")
-	h.DoFunc(c, func() error {
-		nodes := make([]*model.V2rayNode, 0)
-		if err := persist.MySQL().Find(&nodes).Error; err != nil {
-			return err
-		}
-		wg := sync.WaitGroup{}
-		for _, node := range nodes {
-			wg.Add(1)
-			n := node
-			go func() {
-				p, err := ping.NewPinger(n.Host)
-				if err != nil {
-					n.PingRTT = 999
-					if err := persist.Save(n); err != nil {
-						log.Errorf(header, "save result to db error: %v", err)
-					}
-					wg.Done()
-					return
-				}
-				totalMs := int64(0)
-				totalCount := int64(0)
-				totalMu := sync.Mutex{}
-				p.Count = 9
-				p.Timeout = time.Second * 10
-				p.OnRecv = func(packet *ping.Packet) {
-					totalMu.Lock()
-					totalMs += packet.Rtt.Milliseconds()
-					totalCount += 1
-					totalMu.Unlock()
-				}
-				if err := p.Run(); err != nil {
-					n.PingRTT = 999
-					if err := persist.Save(n); err != nil {
-						log.Errorf(header, "save result to db error: %v", err)
-					}
-					wg.Done()
-					return
-				}
-				n.PingRTT = totalMs / totalCount
+	nodes := make([]*model.V2rayNode, 0)
+	if err := persist.MySQL().Find(&nodes).Error; err != nil {
+		return err
+	}
+	wg := sync.WaitGroup{}
+	for _, node := range nodes {
+		wg.Add(1)
+		n := node
+		go func() {
+			p, err := ping.NewPinger(n.Host)
+			if err != nil {
+				n.PingRTT = 999
 				if err := persist.Save(n); err != nil {
 					log.Errorf(header, "save result to db error: %v", err)
 				}
 				wg.Done()
-			}()
-		}
-		wg.Wait()
-		return nil
-	})
+				return
+			}
+			totalMs := int64(0)
+			totalCount := int64(0)
+			totalMu := sync.Mutex{}
+			p.Count = 9
+			p.Timeout = time.Second * 10
+			p.OnRecv = func(packet *ping.Packet) {
+				totalMu.Lock()
+				totalMs += packet.Rtt.Milliseconds()
+				totalCount += 1
+				totalMu.Unlock()
+			}
+			if err := p.Run(); err != nil {
+				n.PingRTT = 999
+				if err := persist.Save(n); err != nil {
+					log.Errorf(header, "save result to db error: %v", err)
+				}
+				wg.Done()
+				return
+			}
+			if totalCount == 0 {
+				n.PingRTT = 999
+			} else {
+				n.PingRTT = totalMs / totalCount
+			}
+			if err := persist.Save(n); err != nil {
+				log.Errorf(header, "save result to db error: %v", err)
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	return nil
+
 }
 
-func (h *V2rayHandler) GetAllSubscriptions(c *gin.Context) {
+func (h *V2rayHandler) GetAllSubscriptions() ([]*model.Subscription, error) {
 	res := make([]*model.Subscription, 0)
-	if err := persist.MySQL().Find(&res).Error; err != nil {
-		errorWith500(c, err)
-		return
-	}
-	c.JSON(http.StatusOK, res)
+	return res, persist.MySQL().Find(&res).Error
 }
 
-func (h *V2rayHandler) EditSubscription(c *gin.Context) {
-	param := &params.UpdateV2raySubscriptionParam{}
-	if err := c.Bind(param); err != nil {
-		return
-	}
-	h.DoFunc(c, func() error {
-		subscriptionConfig := model.NewSubscription(param.SubscriptionName, param.SubscriptionAddr)
-		subscriptionConfig.Id = param.SubscriptionId
-		return persist.Save(subscriptionConfig)
-	})
+func (h *V2rayHandler) EditSubscription(subscriptionId int64, subscriptionName, subscriptionAddr string) error {
+	subscriptionConfig := model.NewSubscription(subscriptionName, subscriptionAddr)
+	subscriptionConfig.Id = subscriptionId
+	return persist.Save(subscriptionConfig)
+
 }
 
-func (h *V2rayHandler) RefreshV2raySubscription(c *gin.Context) {
-	param := &params.V2raySubscriptionIdParam{}
-	if err := c.Bind(param); err != nil {
-		return
+func (h *V2rayHandler) RefreshV2raySubscription(subscriptionId int64) error {
+	subscriptionConfig := &model.Subscription{Id: subscriptionId}
+	if err := persist.Get(subscriptionConfig); err != nil {
+		return err
 	}
-	h.DoFunc(c, func() error {
-		subscriptionConfig := &model.Subscription{Id: param.SubscriptionId}
-		if err := persist.Get(subscriptionConfig); err != nil {
-			return err
-		}
-		return h.refreshSubscription(subscriptionConfig.Id, subscriptionConfig.Name, subscriptionConfig.Addr)
-	})
-}
-
-func (h *V2rayHandler) refreshSubscription(subscriptionId int64, subscriptionName, subscriptionUrl string) error {
+	subscriptionName := subscriptionConfig.Name
+	subscriptionUrl := subscriptionConfig.Addr
 	if h.v2raySubscriptionRefreshing.Load() {
 		return fmt.Errorf("refreshing is already doing")
 	}
@@ -372,25 +295,22 @@ func (h *V2rayHandler) refreshSubscription(subscriptionId int64, subscriptionNam
 	return nil
 }
 
-func (h *V2rayHandler) UpdateConfig(c *gin.Context) {
-	param := &params.V2rayConfig{}
-	if err := c.Bind(param); err != nil {
-		return
-	}
-	h.DoFunc(c, func() error {
-		h.v2rayConfigMu.Lock()
-		defer h.v2rayConfigMu.Unlock()
-		if _, err := h.validateConfig(param.ConfigContent, h.v2rayCurrentNode); err != nil {
-			return err
-		}
-		h.v2rayConfigTemplateContent = param.ConfigContent
-		f, err := os.Create(h.v2rayConfigTemplateFilePath)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-		_, err = f.WriteString(param.ConfigContent)
+func (h *V2rayHandler) UpdateConfig(ConfigContent string) error {
+	h.v2rayConfigMu.Lock()
+	defer h.v2rayConfigMu.Unlock()
+	if _, err := h.validateConfig(ConfigContent, h.v2rayCurrentNode); err != nil {
 		return err
-	})
+	}
+	h.v2rayConfigTemplateContent = ConfigContent
+	f, err := os.Create(h.v2rayConfigTemplateFilePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.WriteString(ConfigContent)
+	return err
+}
 
+func (h *V2rayHandler) GetV2rayConfigTemplateContent() string {
+	return h.v2rayConfigTemplateContent
 }
