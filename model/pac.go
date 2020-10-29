@@ -22,7 +22,7 @@ func NewPacWebSite(s string) *PacWebSite {
 	return &PacWebSite{WebSiteUrl: s}
 }
 
-func NewPacWebSiteForDelete(id int) *PacWebSite {
+func NewPacWebSiteForDelete(id int64) *PacWebSite {
 	return &PacWebSite{
 		Model: gorm.Model{ID: uint(id)},
 	}
