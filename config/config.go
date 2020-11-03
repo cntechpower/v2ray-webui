@@ -11,11 +11,12 @@ import (
 var Config *config
 
 type config struct {
-	ListenAddr         string
-	DebugMode          bool
-	MysqlDSN           string
-	RedisDSN           string
-	ProxyHandlerConfig *proxyHandlerConfig
+	ListenAddr           string
+	DebugMode            bool
+	MysqlDSN             string
+	RedisDSN             string
+	ProxyHandlerConfig   *proxyHandlerConfig
+	SystemdHandlerConfig *systemdHandlerConfig
 }
 
 func (c *config) Validate() error {
@@ -72,6 +73,9 @@ func Default() *config {
 			PacGenerateCron: "0 0 * * *",
 			PacFile:         false,
 			PacFilePath:     "",
+		},
+		SystemdHandlerConfig: &systemdHandlerConfig{
+			monitorServiceNames: []string{"sshd"},
 		},
 	}
 }
