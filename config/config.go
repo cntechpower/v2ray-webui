@@ -75,7 +75,18 @@ func Default() *config {
 			PacFilePath:     "",
 		},
 		SystemdHandlerConfig: &systemdHandlerConfig{
-			MonitorServiceNames: []string{"sshd"},
+			MonitorServiceNames: []string{
+				"ssh.service",
+				//Tracing
+				"kibana.service",
+				"elasticsearch.service",
+				"filebeat.service",
+				"metricbeat.service",
+				//Monitor
+				"node_exporter.service",
+				"grafana.service",
+				"prometheus.service",
+			},
 		},
 	}
 }

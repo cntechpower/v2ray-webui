@@ -9,7 +9,8 @@ import (
 func AddSystemdHandler(engine *gin.Engine, serviceNames []string) (tearDown func()) {
 	controller, _ := NewSystemdController(serviceNames)
 	systemdGroup := engine.Group("/systemd")
-	systemdGroup.GET("/status", controller.GetServiceStatus)
+	systemdGroup.GET("/get", controller.GetServiceStatus)
+	systemdGroup.GET("/list", controller.ListServiceStatus)
 
 	return func() {}
 }
@@ -34,5 +35,11 @@ func (h *SystemdController) GetServiceStatus(c *gin.Context) {
 	}
 	h.DoJSONFunc(c, func() (interface{}, error) {
 		return h.service.CheckService([]string{param.SystemdServiceName})
+	})
+}
+
+func (h *SystemdController) ListServiceStatus(c *gin.Context) {
+	h.DoJSONFunc(c, func() (interface{}, error) {
+		return h.service.ListService()
 	})
 }
