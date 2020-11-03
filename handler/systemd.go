@@ -1,6 +1,6 @@
 package handler
 
-import "github.com/coreos/go-systemd/dbus"
+import "github.com/coreos/go-systemd/v22/dbus"
 
 type SystemdHandler struct {
 	*baseHandler

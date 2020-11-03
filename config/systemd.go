@@ -1,7 +1,7 @@
 package config
 
 type systemdHandlerConfig struct {
-	monitorServiceNames []string
+	MonitorServiceNames []string
 }
 
 func (s *systemdHandlerConfig) Validate() error {

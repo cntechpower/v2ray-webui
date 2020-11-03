@@ -75,7 +75,7 @@ func Default() *config {
 			PacFilePath:     "",
 		},
 		SystemdHandlerConfig: &systemdHandlerConfig{
-			monitorServiceNames: []string{"sshd"},
+			MonitorServiceNames: []string{"sshd"},
 		},
 	}
 }

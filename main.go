@@ -68,7 +68,7 @@ func run(_ *cobra.Command, _ []string) {
 	tearDownFuncs := make([]func(), 0)
 	tearDownFuncs = append(tearDownFuncs,
 		controller.AddProxyHandler(engine),
-		controller.AddSystemdHandler(engine),
+		controller.AddSystemdHandler(engine, config.Config.SystemdHandlerConfig.MonitorServiceNames),
 		controller.AddV2rayHandler(engine, v2rayConfigTemplatePath))
 	httpExistChan := make(chan error)
 	go func() {
