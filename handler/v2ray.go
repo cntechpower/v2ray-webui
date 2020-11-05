@@ -89,7 +89,9 @@ func (h *V2rayHandler) validateConfig(config string, node *model.V2rayNode) (*v2
 }
 
 func (h *V2rayHandler) SwitchNode(nodeId int64) error {
-	node := model.NewV2rayNode(nodeId, "")
+	node := &model.V2rayNode{
+		Id: nodeId,
+	}
 	if err := persist.Get(node); err != nil {
 		return err
 	}
