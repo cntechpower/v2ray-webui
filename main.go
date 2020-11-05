@@ -66,7 +66,11 @@ func run(_ *cobra.Command, _ []string) {
 			AllowFiles:             true,
 		}))
 	}
-	engine.Use(static.Serve("/", static.LocalFile("./static/front-end", true)))
+	staticHandler:=static.Serve("/", static.LocalFile("./static/front-end", true))
+	engine.Use(staticHandler)
+	engine.NoRoute(func(c *gin.Context) {
+		c.File("./static/front-end/index.html")
+	})
 	apiGroup:=engine.Group("/api")
 	tearDownFuncs := make([]func(), 0)
 	tearDownFuncs = append(tearDownFuncs,
