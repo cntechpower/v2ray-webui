@@ -78,7 +78,7 @@ func (h *V2rayHandler) TearDown() {
 
 func (h *V2rayHandler) validateConfig(config string, node *model.V2rayNode) (*v2ray.Config, error) {
 	header := log.NewHeader("V2rayHandler.validateConfig")
-	config = strings.ReplaceAll(config, "{serverHostName}", node.Host)
+	config = strings.ReplaceAll(config, "{serverHost}", node.Host)
 	config = strings.ReplaceAll(config, "{serverName}", node.Name)
 	config = strings.ReplaceAll(config, "{serverPath}", node.Path)
 	config = strings.ReplaceAll(config, "9495945", strconv.FormatInt(node.Port, 10))
