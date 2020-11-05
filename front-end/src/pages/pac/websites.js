@@ -1,5 +1,6 @@
 import React from "react";
 import "antd/dist/antd.css";
+import api from "../../api/api.js";
 // import "./index.css";
 import ButtonWithConfirm from "../../utils/ButtonWithConfirm";
 import {
@@ -30,7 +31,7 @@ class PacWebSites extends React.Component {
   refreshPacWebsitesList = () => {
     var self = this;
     axios
-      .get("http://127.0.0.1:8888/pac/website/list")
+      .get(api.refreshPacWebsitesListApi)
       .then(function (response) {
         self.setState({
           isLoaded: true,
@@ -72,7 +73,7 @@ class PacWebSites extends React.Component {
     var data = new FormData();
     data.append("web_site", addr);
     axios
-      .post("http://127.0.0.1:8888/pac/website/add", data)
+      .post(api.addPacWebsiteApi, data)
       .then(function (response) {
         self.openNotificationWithIcon(
           "success",
@@ -99,7 +100,7 @@ class PacWebSites extends React.Component {
     var data = new FormData();
     data.append("website_id", id);
     axios
-      .post("http://127.0.0.1:8888/pac/website/del", data)
+      .post(api.delPacWebsiteApi, data)
       .then(function (response) {
         self.openNotificationWithIcon(
           "success",

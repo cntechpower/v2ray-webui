@@ -5,6 +5,7 @@ import ButtonWithConfirm from "../../utils/ButtonWithConfirm";
 import { Table, Result, notification, Button, Space, Divider } from "antd";
 import { CloudSyncOutlined } from "@ant-design/icons";
 import axios from "axios";
+import api from "../../api/api.js";
 
 class V2rayNodes extends React.Component {
   constructor(props) {
@@ -18,7 +19,7 @@ class V2rayNodes extends React.Component {
   refreshV2rayNodeList = () => {
     var self = this;
     axios
-      .get("http://127.0.0.1:8888/v2ray/subscription/nodes/list")
+      .get(api.refreshV2rayNodeListApi)
       .then(function (response) {
         self.setState({
           isLoaded: true,
@@ -49,7 +50,7 @@ class V2rayNodes extends React.Component {
     var data = new FormData();
     data.append("node_id", nodeId);
     axios
-      .post("http://127.0.0.1:8888/v2ray/config/switch_node", data)
+      .post(api.switchV2rayNodeApi, data)
       .then(function (response) {
         self.openNotificationWithIcon(
           "success",
@@ -74,7 +75,7 @@ class V2rayNodes extends React.Component {
       "测速需要一定时间, 请耐心等待"
     );
     axios
-      .post("http://127.0.0.1:8888/v2ray/subscription/nodes/ping")
+      .post(api.pingAllV2rayNodeApi)
       .then(function (response) {
         self.openNotificationWithIcon("success", "测速成功", "");
       })

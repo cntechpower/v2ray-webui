@@ -16,6 +16,7 @@ import {
 import { SyncOutlined, PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
 import Draggable from "react-draggable";
+import api from "../../api/api.js";
 
 class V2raySubscriptions extends React.Component {
   constructor(props) {
@@ -30,7 +31,7 @@ class V2raySubscriptions extends React.Component {
   refreshV2raySubscriptionsList = () => {
     var self = this;
     axios
-      .get("http://127.0.0.1:8888/v2ray/subscription/list")
+      .get(api.refreshV2raySubscriptionsListApi)
       .then(function (response) {
         self.setState({
           isLoaded: true,
@@ -73,7 +74,7 @@ class V2raySubscriptions extends React.Component {
     data.append("subscription_name", name);
     data.append("subscription_addr", addr);
     axios
-      .post("http://127.0.0.1:8888/v2ray/subscription/add", data)
+      .post(api.addV2raySubscriptionsApi, data)
       .then(function (response) {
         self.openNotificationWithIcon(
           "success",
@@ -99,7 +100,7 @@ class V2raySubscriptions extends React.Component {
     var data = new FormData();
     data.append("subscription_id", id);
     axios
-      .post("http://127.0.0.1:8888/v2ray/subscription/delete", data)
+      .post(api.delPacWebsiteApi, data)
       .then(function (response) {
         self.openNotificationWithIcon(
           "success",
@@ -124,7 +125,7 @@ class V2raySubscriptions extends React.Component {
     var data = new FormData();
     data.append("subscription_id", id);
     axios
-      .post("http://127.0.0.1:8888/v2ray/subscription/refresh", data)
+      .post(api.refreshV2raySubscriptionsApi, data)
       .then(function (response) {
         self.openNotificationWithIcon(
           "success",
