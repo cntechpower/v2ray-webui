@@ -40,7 +40,7 @@
       "settings": {
         "vnext": [
           {
-            "address": "{serverName}",
+            "address": "{serverHost}",
             "users": [
               {
                 "id": "{serverId}",
@@ -49,16 +49,16 @@
                 "level": 0
               }
             ],
-            "port": 443
+            "port": {serverPort}
           }
         ]
       },
-      "tag": "USA dmit",
+      "tag": "{serverName}",
       "streamSettings": {
         "wsSettings": {
           "path": "{serverPath}",
           "headers": {
-            "Host": "{serverName}"
+            "Host": "{serverHost}"
           }
         },
         "quicSettings": {
@@ -73,7 +73,7 @@
           "alpn": [
             "http/1.1"
           ],
-          "serverName": "{serverName}",
+          "serverName": "{serverHost}",
           "allowInsecureCiphers": false
         },
         "sockopt": {},
