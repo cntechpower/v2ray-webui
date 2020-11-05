@@ -78,9 +78,10 @@ func (h *V2rayHandler) TearDown() {
 
 func (h *V2rayHandler) validateConfig(config string, node *model.V2rayNode) (*v2ray.Config, error) {
 	header := log.NewHeader("V2rayHandler.validateConfig")
-	config = strings.ReplaceAll(config, "{serverName}", node.Host)
+	config = strings.ReplaceAll(config, "{serverHost}", node.Host)
+	config = strings.ReplaceAll(config, "{serverName}", node.Name)
 	config = strings.ReplaceAll(config, "{serverPath}", node.Path)
-	config = strings.ReplaceAll(config, "{serverPort}", strconv.FormatInt(node.Port, 10))
+	config = strings.ReplaceAll(config, "9495945", strconv.FormatInt(node.Port, 10))
 	config = strings.ReplaceAll(config, "{serverId}", node.ServerId)
 	log.Infof(header, "validate config: %v", config)
 	return v2rayConf.LoadJSONConfig(strings.NewReader(config))
@@ -88,7 +89,9 @@ func (h *V2rayHandler) validateConfig(config string, node *model.V2rayNode) (*v2
 }
 
 func (h *V2rayHandler) SwitchNode(nodeId int64) error {
-	node := model.NewV2rayNode(nodeId, "")
+	node := &model.V2rayNode{
+		Id: nodeId,
+	}
 	if err := persist.Get(node); err != nil {
 		return err
 	}
@@ -100,7 +103,7 @@ func (h *V2rayHandler) SwitchNode(nodeId int64) error {
 	h.v2rayConfig = config
 	h.v2rayCurrentNode = node
 	h.v2rayConfigMu.Unlock()
-	if err := h.StopV2ray(); err != nil {
+	if err := h.StopV2ray(); err != nil && err != ErrV2rayNotStarted {
 		return err
 	}
 	return h.StartV2ray()
@@ -137,11 +140,13 @@ func (h *V2rayHandler) StartV2ray() error {
 	return nil
 }
 
+var ErrV2rayNotStarted = fmt.Errorf("v2ray server is not started")
+
 func (h *V2rayHandler) StopV2ray() error {
 	h.v2rayServerMu.Lock()
 	defer h.v2rayServerMu.Unlock()
 	if h.v2rayServer == nil {
-		return fmt.Errorf("v2ray server is not started")
+		return ErrV2rayNotStarted
 	}
 	if err := h.v2rayServer.Close(); err != nil {
 		header := log.NewHeader("StopV2ray")

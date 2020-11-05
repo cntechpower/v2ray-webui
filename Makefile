@@ -20,3 +20,13 @@ upload: build
 	curl -T  $(PROJECT_NAME)-$(VERSION).tar.gz -u ftp:ftp ftp://10.0.0.2/ci/$(PROJECT_NAME)/
 	curl -T  $(PROJECT_NAME)-$(VERSION).tar.gz -u ftp:ftp ftp://10.0.0.2/ci/$(PROJECT_NAME)/$(PROJECT_NAME)-latest.tar.gz
 	rm -rf bin/geoip.dat
+
+build_fe:
+	cd front-end
+	cd front-end && rm -rf node_modules
+	cd front-end && cnpm install
+	cd front-end && yarn build
+
+update_fe_in_repo: build_fe
+	rm -rf static/front-end
+	mv front-end/build static/front-end
