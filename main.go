@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/contrib/static"
 	"github.com/spf13/cobra"
 
 	"cntechpower.com/api-server/config"
@@ -56,7 +57,7 @@ func run(_ *cobra.Command, _ []string) {
 		gin.SetMode(gin.ReleaseMode)
 	} else {
 		//debug mode, set no cors check.
-		log.Infof(h, "running in debug mode, turn of cors check.")
+		log.Infof(h, "running in debug mode, turn off cors check.")
 		engine.Use(cors.New(cors.Config{
 			AllowAllOrigins:        true,
 			AllowWildcard:          true,
@@ -65,11 +66,13 @@ func run(_ *cobra.Command, _ []string) {
 			AllowFiles:             true,
 		}))
 	}
+	engine.Use(static.Serve("/", static.LocalFile("./static/front-end", true)))
+	apiGroup:=engine.Group("/api")
 	tearDownFuncs := make([]func(), 0)
 	tearDownFuncs = append(tearDownFuncs,
-		controller.AddProxyHandler(engine),
-		controller.AddSystemdHandler(engine, config.Config.SystemdHandlerConfig.MonitorServiceNames),
-		controller.AddV2rayHandler(engine, v2rayConfigTemplatePath))
+		controller.AddProxyHandler(apiGroup),
+		controller.AddSystemdHandler(apiGroup, config.Config.SystemdHandlerConfig.MonitorServiceNames),
+		controller.AddV2rayHandler(apiGroup, v2rayConfigTemplatePath))
 	httpExistChan := make(chan error)
 	go func() {
 		httpExistChan <- engine.Run(config.Config.ListenAddr)

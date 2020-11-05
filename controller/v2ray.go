@@ -9,7 +9,7 @@ import (
 	"cntechpower.com/api-server/model/params"
 )
 
-func AddV2rayHandler(engine *gin.Engine, templateConfigFilePath string) (tearDown func()) {
+func AddV2rayHandler(engine *gin.RouterGroup, templateConfigFilePath string) (tearDown func()) {
 	controller, err := NewV2rayController(templateConfigFilePath)
 	if err != nil {
 		panic(err)

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AddSystemdHandler(engine *gin.Engine, serviceNames []string) (tearDown func()) {
+func AddSystemdHandler(engine *gin.RouterGroup, serviceNames []string) (tearDown func()) {
 	controller, _ := NewSystemdController(serviceNames)
 	systemdGroup := engine.Group("/systemd")
 	systemdGroup.GET("/get", controller.GetServiceStatus)

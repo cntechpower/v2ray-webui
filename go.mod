@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/coreos/go-systemd/v22 v22.1.0
 	github.com/gin-contrib/cors v1.3.1
+	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-ping/ping v0.0.0-20201022122018-3977ed72668a
 	github.com/go-playground/assert/v2 v2.0.1

@@ -10,7 +10,7 @@ import (
 	"cntechpower.com/api-server/model/params"
 )
 
-func AddProxyHandler(engine *gin.Engine) (teardownFunc func()) {
+func AddProxyHandler(engine *gin.RouterGroup) (teardownFunc func()) {
 	//proxy handler
 	{
 		pacGroup := engine.Group("/pac")
