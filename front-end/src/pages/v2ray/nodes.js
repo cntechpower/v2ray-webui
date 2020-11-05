@@ -136,7 +136,7 @@ class V2rayNodes extends React.Component {
             btnName="使用"
             confirmTitle="是否使用此节点?"
             confirmContent={record.subscription_id + " : " + record.ps}
-            fnOnOk={() => this.pingAllV2rayNode()}
+            fnOnOk={() => this.switchV2rayNode(record.ps, record.primary_key)}
           />
         ),
       },
