@@ -49,7 +49,7 @@
                 "level": 0
               }
             ],
-            "port": {serverPort}
+            "port": 9495945
           }
         ]
       },

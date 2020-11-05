@@ -81,7 +81,7 @@ func (h *V2rayHandler) validateConfig(config string, node *model.V2rayNode) (*v2
 	config = strings.ReplaceAll(config, "{serverHostName}", node.Host)
 	config = strings.ReplaceAll(config, "{serverName}", node.Name)
 	config = strings.ReplaceAll(config, "{serverPath}", node.Path)
-	config = strings.ReplaceAll(config, "{serverPort}", strconv.FormatInt(node.Port, 10))
+	config = strings.ReplaceAll(config, "9495945", strconv.FormatInt(node.Port, 10))
 	config = strings.ReplaceAll(config, "{serverId}", node.ServerId)
 	log.Infof(header, "validate config: %v", config)
 	return v2rayConf.LoadJSONConfig(strings.NewReader(config))
