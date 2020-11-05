@@ -101,7 +101,7 @@ func (h *V2rayHandler) SwitchNode(nodeId int64) error {
 	h.v2rayConfig = config
 	h.v2rayCurrentNode = node
 	h.v2rayConfigMu.Unlock()
-	if err := h.StopV2ray(); err != nil {
+	if err := h.StopV2ray(); err != nil && err != ErrV2rayNotStarted {
 		return err
 	}
 	return h.StartV2ray()
@@ -138,11 +138,13 @@ func (h *V2rayHandler) StartV2ray() error {
 	return nil
 }
 
+var ErrV2rayNotStarted = fmt.Errorf("v2ray server is not started")
+
 func (h *V2rayHandler) StopV2ray() error {
 	h.v2rayServerMu.Lock()
 	defer h.v2rayServerMu.Unlock()
 	if h.v2rayServer == nil {
-		return fmt.Errorf("v2ray server is not started")
+		return ErrV2rayNotStarted
 	}
 	if err := h.v2rayServer.Close(); err != nil {
 		header := log.NewHeader("StopV2ray")
