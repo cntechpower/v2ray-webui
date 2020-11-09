@@ -14,7 +14,7 @@ docker_test:
 build:
 	mkdir -p bin/
 	go build ${LDFLAGS} -o bin/$(PROJECT_NAME)
-upload: build
+upload: sonar build
 	cp static/geoip.dat bin/
 	tar -czvf $(PROJECT_NAME)-$(VERSION).tar.gz bin/
 	curl -T  $(PROJECT_NAME)-$(VERSION).tar.gz -u ftp:ftp ftp://10.0.0.2/ci/$(PROJECT_NAME)/
@@ -30,3 +30,10 @@ build_fe:
 update_fe_in_repo: build_fe
 	rm -rf static/front-end
 	mv front-end/build static/front-end
+sonar:
+	sonar-scanner \
+	 -Dsonar.projectKey=Api-server \
+ 	 -Dsonar.sources=. \
+ 	 -Dsonar.host.url=http://10.0.0.2:9999 \
+ 	 -Dsonar.exclusions=front-end/\*\* \
+ 	 -Dsonar.login=4c693670e2d96f386c9f55ae8ac8c37ddd6a5aae
