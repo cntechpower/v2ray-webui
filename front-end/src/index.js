@@ -5,6 +5,7 @@ import "./index.css";
 import App from "./App";
 import V2rayNodes from "./pages/v2ray/nodes";
 import V2raySubscriptions from "./pages/v2ray/subscriptions";
+import V2rayConfig from "./pages/v2ray/config";
 import PacWebsites from "./pages/pac/websites";
 import reportWebVitals from "./reportWebVitals";
 
@@ -27,6 +28,11 @@ ReactDOM.render(
         <Route path="/v2ray/subscriptions/">
           <App openKey="v2ray" selectKey="v2ray_subs">
             <V2raySubscriptions />
+          </App>
+        </Route>
+        <Route path="/v2ray/config/">
+          <App openKey="v2ray" selectKey="v2ray_config">
+            <V2rayConfig />
           </App>
         </Route>
         <Route path="/">

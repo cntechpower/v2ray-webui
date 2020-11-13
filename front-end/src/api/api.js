@@ -19,4 +19,6 @@ export default {
   addV2raySubscriptionsApi: prefix + "/api/v2ray/subscription/add",
   delV2raySubscriptionsApi: prefix + "/api/v2ray/subscription/delete",
   refreshV2raySubscriptionsApi: prefix + "/api/v2ray/subscription/refresh",
+  refreshV2rayConfigApi: prefix + "/api/v2ray/config/get",
+  updateV2rayConfigApi: prefix + "/api/v2ray/config/update",
 };
