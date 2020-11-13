@@ -23,6 +23,7 @@ func AddV2rayHandler(engine *gin.RouterGroup, templateConfigFilePath string) (te
 	v2rayConfigGroup.POST("/switch_node", controller.SwitchNode)
 	v2rayConfigGroup.GET("/get", controller.GetConfig)
 	v2rayConfigGroup.POST("/update", controller.UpdateConfig)
+	v2rayConfigGroup.POST("/validate", controller.ValidateConfig)
 
 	subscriptionGroup := v2rayGroup.Group("/subscription")
 	subscriptionGroup.GET("/nodes/list", controller.GetAllV2rayNodes)
@@ -74,6 +75,16 @@ func (h *V2rayController) UpdateConfig(c *gin.Context) {
 	}
 	h.DoFunc(c, func() error {
 		return h.service.UpdateConfig(param.ConfigContent)
+	})
+}
+
+func (h *V2rayController) ValidateConfig(c *gin.Context) {
+	param := &params.V2rayConfig{}
+	if err := c.Bind(param); err != nil {
+		return
+	}
+	h.DoFunc(c, func() error {
+		return h.service.ValidateConfig(param.ConfigContent)
 	})
 }
 

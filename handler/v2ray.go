@@ -329,3 +329,20 @@ func (h *V2rayHandler) UpdateConfig(ConfigContent string) error {
 func (h *V2rayHandler) GetV2rayConfigTemplateContent() string {
 	return h.v2rayConfigTemplateContent
 }
+
+func (h *V2rayHandler) ValidateConfig(ConfigContent string) error {
+	h.v2rayConfigMu.Lock()
+	defer h.v2rayConfigMu.Unlock()
+	testNode := h.v2rayCurrentNode
+	if testNode == nil {
+		testNode = &model.V2rayNode{
+			Host:     "127.0.0.1",
+			Path:     "/test",
+			Port:     9495,
+			Name:     "test",
+			ServerId: "aaa",
+		}
+	}
+	_, err := h.validateConfig(ConfigContent, testNode)
+	return err
+}

@@ -1,7 +1,15 @@
 import React from "react";
 import "antd/dist/antd.css";
-import { Skeleton, Result, Button, notification, Space, Divider } from "antd";
-import { SyncOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import {
+  Skeleton,
+  Result,
+  Button,
+  notification,
+  Space,
+  Divider,
+  Tooltip,
+} from "antd";
+import { SyncOutlined, BugOutlined, SaveOutlined } from "@ant-design/icons";
 import JSONInput from "react-json-editor-ajrm";
 import locale from "react-json-editor-ajrm/locale/en";
 import axios from "axios";
@@ -13,6 +21,7 @@ class V2rayConfig extends React.Component {
     this.state = {
       error: null,
       isLoaded: false,
+      configValidate: false,
       config: null,
     };
   }
@@ -33,6 +42,9 @@ class V2rayConfig extends React.Component {
           isLoaded: true,
           error,
         });
+      })
+      .then(function () {
+        self.setState({ configValidate: false });
       });
   };
 
@@ -46,7 +58,7 @@ class V2rayConfig extends React.Component {
   updateV2rayConfig = (config) => {
     var self = this;
     var data = new FormData();
-    data.append("config_content", this.state.config);
+    data.append("config_content", JSON.stringify(self.state.config));
     axios
       .post(api.updateV2rayConfigApi, data)
       .then(function (response) {
@@ -64,6 +76,25 @@ class V2rayConfig extends React.Component {
           "修改配置失败. " + error.response.data.Message
         );
         self.refreshV2rayConfig();
+      });
+  };
+
+  validateV2rayConfig = (config) => {
+    var self = this;
+    var data = new FormData();
+    data.append("config_content", JSON.stringify(self.state.config));
+    axios
+      .post(api.validateV2rayConfigApi, data)
+      .then(function (response) {
+        self.openNotificationWithIcon("success", "校验配置成功", "配置合法");
+        self.setState({ configValidate: true });
+      })
+      .catch(function (error) {
+        self.openNotificationWithIcon(
+          "error",
+          "校验配置失败",
+          "配置不合法: " + error.response.data.Message
+        );
       });
   };
   componentDidMount() {
@@ -100,11 +131,21 @@ class V2rayConfig extends React.Component {
             </Button>
             <Button
               type="primary"
-              icon={<CheckCircleOutlined />}
-              onClick={this.updateV2rayConfig}
+              icon={<BugOutlined />}
+              onClick={this.validateV2rayConfig}
             >
-              提交
+              校验
             </Button>
+            <Tooltip placement="top" title="请先校验配置~">
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={this.updateV2rayConfig}
+                disabled={!this.state.configValidate}
+              >
+                保存
+              </Button>
+            </Tooltip>
           </Space>
           <Divider />
           <JSONInput
@@ -116,7 +157,10 @@ class V2rayConfig extends React.Component {
               string: "#DAA520", // overrides theme colors with whatever color value you want
             }}
             onChange={(values) => {
-              this.setState({ config: values });
+              this.setState({
+                config: values.plain_text,
+                configValidate: false,
+              });
             }}
             height="750px"
             width="700px"

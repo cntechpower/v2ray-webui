@@ -21,4 +21,5 @@ export default {
   refreshV2raySubscriptionsApi: prefix + "/api/v2ray/subscription/refresh",
   refreshV2rayConfigApi: prefix + "/api/v2ray/config/get",
   updateV2rayConfigApi: prefix + "/api/v2ray/config/update",
+  validateV2rayConfigApi: prefix + "/api/v2ray/config/validate",
 };

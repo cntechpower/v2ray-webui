@@ -6,3 +6,4 @@ bin
 front-end/node_modules/*
 front-end/node_modules
 .scannerwork/
+front-end/.vscode/
