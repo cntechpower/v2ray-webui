@@ -1,6 +1,6 @@
 import React from "react";
 import "antd/dist/antd.css";
-import "./index.css";
+import "./App.css";
 import { Layout, Menu } from "antd";
 import { Link } from "react-router-dom";
 import {
@@ -13,9 +13,13 @@ const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
 class SiderBar extends React.Component {
-  state = {
-    collapsed: false,
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      collapsed: false,
+    };
+  }
 
   onCollapse = (collapsed) => {
     console.log(collapsed);
@@ -29,7 +33,9 @@ class SiderBar extends React.Component {
     return (
       <Layout style={{ minHeight: "100vh" }}>
         <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
-          <div className="logo" />
+          <div className="logo" onClick={this.goHome}>
+            <h3 class="h3">V2ray管理平台</h3>
+          </div>
           <Menu
             theme="dark"
             defaultSelectedKeys={new Array(selectedKey)}

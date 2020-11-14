@@ -8,6 +8,7 @@ import {
   Space,
   Divider,
   Tooltip,
+  Card,
 } from "antd";
 import { SyncOutlined, BugOutlined, SaveOutlined } from "@ant-design/icons";
 import JSONInput from "react-json-editor-ajrm";
@@ -148,23 +149,45 @@ class V2rayConfig extends React.Component {
             </Tooltip>
           </Space>
           <Divider />
-          <JSONInput
-            id="a_unique_id"
-            placeholder={config}
-            locale={locale}
-            theme="light_mitsuketa_tribute"
-            colors={{
-              string: "#DAA520", // overrides theme colors with whatever color value you want
-            }}
-            onChange={(values) => {
-              this.setState({
-                config: values.plain_text,
-                configValidate: false,
-              });
-            }}
-            height="750px"
-            width="700px"
-          />
+          <div class="row">
+            <div class="column" style={{ float: "left" }}>
+              <JSONInput
+                id="a_unique_id"
+                placeholder={config}
+                locale={locale}
+                theme="light_mitsuketa_tribute"
+                colors={{
+                  string: "#DAA520", // overrides theme colors with whatever color value you want
+                }}
+                onChange={(values) => {
+                  this.setState({
+                    config: values.plain_text,
+                    configValidate: false,
+                  });
+                }}
+                height="750px"
+                width="700px"
+              />
+            </div>
+            <div class="column" style={{ float: "right" }}>
+              <Card
+                title="配置填写帮助"
+                bordered={false}
+                style={{ width: 400 }}
+              >
+                <p>
+                  支持如下几种变量, 填写变量到配置模板中后,
+                  会自动替换为当前使用的节点信息:
+                </p>
+                <ul>
+                  <li>1. serverHost : 服务器地址</li>
+                  <li>2. serverName : 服务器名称</li>
+                  <li>3. 9495945 : 服务器端口</li>
+                  <li>4. serverId : 服务器ID</li>
+                </ul>
+              </Card>
+            </div>
+          </div>
         </>
       );
     }

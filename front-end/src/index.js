@@ -36,7 +36,9 @@ ReactDOM.render(
           </App>
         </Route>
         <Route path="/">
-          <App>home</App>
+          <App openKey="" selectKey="">
+            home
+          </App>
         </Route>
       </Switch>
     </Router>
