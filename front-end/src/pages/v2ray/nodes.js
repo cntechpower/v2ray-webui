@@ -13,6 +13,7 @@ class V2rayNodes extends React.Component {
     this.state = {
       error: null,
       isLoaded: false,
+      nodePingDoing: false,
       items: [],
     };
   }
@@ -74,6 +75,7 @@ class V2rayNodes extends React.Component {
       "测速中",
       "测速需要一定时间, 请耐心等待"
     );
+    self.setState({ nodePingDoing: true });
     axios
       .post(api.pingAllV2rayNodeApi)
       .then(function (response) {
@@ -88,6 +90,7 @@ class V2rayNodes extends React.Component {
       })
       .then(function () {
         self.refreshV2rayNodeList();
+        self.setState({ nodePingDoing: false });
       });
   };
 
@@ -162,6 +165,7 @@ class V2rayNodes extends React.Component {
               type="primary"
               icon={<CloudSyncOutlined />}
               onClick={this.pingAllV2rayNode}
+              loading={this.state.nodePingDoing}
             >
               节点测速
             </Button>
