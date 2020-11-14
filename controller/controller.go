@@ -5,14 +5,7 @@ import (
 
 	"cntechpower.com/api-server/model"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 )
-
-var checker *validator.Validate
-
-func init() {
-	checker = validator.New()
-}
 
 type baseController struct {
 }

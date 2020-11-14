@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/contrib/static"
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 
 	"cntechpower.com/api-server/config"
@@ -66,16 +66,15 @@ func run(_ *cobra.Command, _ []string) {
 			AllowFiles:             true,
 		}))
 	}
-	staticHandler:=static.Serve("/", static.LocalFile("./static/front-end", true))
+	staticHandler := static.Serve("/", static.LocalFile("./static/front-end", true))
 	engine.Use(staticHandler)
 	engine.NoRoute(func(c *gin.Context) {
 		c.File("./static/front-end/index.html")
 	})
-	apiGroup:=engine.Group("/api")
+	apiGroup := engine.Group("/api")
 	tearDownFuncs := make([]func(), 0)
 	tearDownFuncs = append(tearDownFuncs,
 		controller.AddProxyHandler(apiGroup),
-		controller.AddSystemdHandler(apiGroup, config.Config.SystemdHandlerConfig.MonitorServiceNames),
 		controller.AddV2rayHandler(apiGroup, v2rayConfigTemplatePath))
 	httpExistChan := make(chan error)
 	go func() {

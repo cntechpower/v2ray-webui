@@ -11,12 +11,11 @@ import (
 var Config *config
 
 type config struct {
-	ListenAddr           string
-	DebugMode            bool
-	MysqlDSN             string
-	RedisDSN             string
-	ProxyHandlerConfig   *proxyHandlerConfig
-	SystemdHandlerConfig *systemdHandlerConfig
+	ListenAddr         string
+	DebugMode          bool
+	MysqlDSN           string
+	RedisDSN           string
+	ProxyHandlerConfig *proxyHandlerConfig
 }
 
 func (c *config) Validate() error {
@@ -73,20 +72,6 @@ func Default() *config {
 			PacGenerateCron: "0 0 * * *",
 			PacFile:         false,
 			PacFilePath:     "",
-		},
-		SystemdHandlerConfig: &systemdHandlerConfig{
-			MonitorServiceNames: []string{
-				"ssh.service",
-				//Tracing
-				"kibana.service",
-				"elasticsearch.service",
-				"filebeat.service",
-				"metricbeat.service",
-				//Monitor
-				"node_exporter.service",
-				"grafana.service",
-				"prometheus.service",
-			},
 		},
 	}
 }
