@@ -19,6 +19,7 @@ class ButtonWithConfirm extends React.Component {
     return (
       <Button
         disabled={this.props.btnDisabled}
+        loading={this.props.loading}
         onClick={() => this.showConfirm(this.props)}
       >
         {this.props.btnName}

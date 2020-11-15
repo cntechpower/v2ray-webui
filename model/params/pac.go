@@ -11,3 +11,7 @@ type AddCustomPacWebsitesParam struct {
 type DelCustomPacWebsitesParam struct {
 	WebSiteId int64 `form:"website_id" binding:"required"`
 }
+
+type UpdatePacProxyAddrParam struct {
+	PacAddr string `form:"addr" binding:"required"`
+}

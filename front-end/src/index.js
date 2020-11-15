@@ -7,6 +7,7 @@ import V2rayNodes from "./pages/v2ray/nodes";
 import V2raySubscriptions from "./pages/v2ray/subscriptions";
 import V2rayConfig from "./pages/v2ray/config";
 import PacWebsites from "./pages/pac/websites";
+import PacConfig from "./pages/pac/config";
 import reportWebVitals from "./reportWebVitals";
 
 ReactDOM.render(
@@ -15,9 +16,14 @@ ReactDOM.render(
       {/* A <Switch> looks through its children <Route>s and
             renders the first one that matches the current URL. */}
       <Switch>
-        <Route path="/pac/config">
-          <App openKey="pac" selectKey="pac">
+        <Route path="/pac/websites">
+          <App openKey="pac" selectKey="pac_websites">
             <PacWebsites />
+          </App>
+        </Route>
+        <Route path="/pac/config">
+          <App openKey="pac" selectKey="pac_config">
+            <PacConfig />
           </App>
         </Route>
         <Route path="/v2ray/servers">

@@ -10,6 +10,8 @@ export default {
   refreshPacWebsitesListApi: prefix + "/api/pac/website/list",
   addPacWebsiteApi: prefix + "/api/pac/website/add",
   delPacWebsiteApi: prefix + "/api/pac/website/del",
+  getPacConfigApi: prefix + "/api/pac/config/get",
+  updatePacConfigApi: prefix + "/api/pac/config/update",
 
   //v2ray pages
   refreshV2rayNodeListApi: prefix + "/api/v2ray/subscription/nodes/list",

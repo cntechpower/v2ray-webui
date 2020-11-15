@@ -18,16 +18,25 @@ func AddProxyHandler(engine *gin.RouterGroup) (teardownFunc func()) {
 		if err != nil {
 			panic(err)
 		}
-		pacGroup.GET("", controller.GetCurrentPAC)
-		pacGroup.POST("/cron", controller.UpdateCron)
-		pacGroup.GET("/cron", controller.GetCurrentCron)
-		pacGroup.POST("/generate", controller.ManualGeneratePac)
+		pacGroup.GET("/get", controller.GetCurrentPAC)
+		pacGroup.POST("/update", controller.ManualGeneratePac)
+		cronGroup := pacGroup.Group("/cron")
+		{
+			cronGroup.POST("/update", controller.UpdateCron)
+			cronGroup.GET("/get", controller.GetCurrentCron)
+
+		}
+		configGroup := pacGroup.Group("/config")
+		{
+			configGroup.GET("/get", controller.GetConfig)
+			configGroup.POST("/update", controller.UpdateConfig)
+		}
 
 		webSiteGroup := pacGroup.Group("/website")
 		{
-			webSiteGroup.GET("/list", controller.ListCustomProxyWebsites)
-			webSiteGroup.POST("/add", controller.AddCustomPacWebsites)
-			webSiteGroup.POST("/del", controller.DelCustomPacWebsites)
+			webSiteGroup.GET("/list", controller.ListCustomWebsites)
+			webSiteGroup.POST("/add", controller.AddCustomWebsites)
+			webSiteGroup.POST("/del", controller.DelCustomWebsites)
 		}
 
 	}
@@ -75,9 +84,9 @@ func (h *PacController) GetCurrentCron(c *gin.Context) {
 	c.String(http.StatusOK, h.service.GetCurrentCron())
 }
 
-func (h *PacController) ListCustomProxyWebsites(c *gin.Context) {
+func (h *PacController) ListCustomWebsites(c *gin.Context) {
 	h.DoJSONFunc(c, func() (interface{}, error) {
-		res, err := h.service.ListCustomProxyWebsites()
+		res, err := h.service.ListCustomWebsites()
 		if err != nil {
 			return nil, err
 		}
@@ -85,22 +94,38 @@ func (h *PacController) ListCustomProxyWebsites(c *gin.Context) {
 	})
 }
 
-func (h *PacController) AddCustomPacWebsites(c *gin.Context) {
+func (h *PacController) AddCustomWebsites(c *gin.Context) {
 	param := &params.AddCustomPacWebsitesParam{}
 	if err := c.Bind(param); err != nil {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.AddCustomPacWebsites(param.WebSite)
+		return h.service.AddCustomWebsite(param.WebSite)
 	})
 }
 
-func (h *PacController) DelCustomPacWebsites(c *gin.Context) {
+func (h *PacController) DelCustomWebsites(c *gin.Context) {
 	param := &params.DelCustomPacWebsitesParam{}
 	if err := c.Bind(param); err != nil {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.DelCustomPacWebsites(param.WebSiteId)
+		return h.service.DelCustomWebsites(param.WebSiteId)
+	})
+}
+
+func (h *PacController) UpdateConfig(c *gin.Context) {
+	param := &model.PacHandlerConfig{}
+	if err := c.Bind(param); err != nil {
+		return
+	}
+	h.DoFunc(c, func() error {
+		return h.service.UpdateConfig(param)
+	})
+}
+
+func (h *PacController) GetConfig(c *gin.Context) {
+	h.DoJSONFunc(c, func() (interface{}, error) {
+		return h.service.GetConfig()
 	})
 }

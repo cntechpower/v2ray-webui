@@ -8,35 +8,40 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const defaultConfPath = "./conf/api.config"
+
 var Config *config
 
 type config struct {
-	ListenAddr         string
-	DebugMode          bool
-	MysqlDSN           string
-	RedisDSN           string
-	ProxyHandlerConfig *proxyHandlerConfig
+	ListenAddr       string
+	DebugMode        bool
+	MysqlDSN         string
+	RedisDSN         string
+	PacHandlerConfig *pacHandlerConfig
 }
 
 func (c *config) Validate() error {
 	if c.ListenAddr == "" {
 		return fmt.Errorf("listen addr is empty")
 	}
-	if c.ProxyHandlerConfig != nil {
-		if err := c.ProxyHandlerConfig.Validate(); err != nil {
+	if c.PacHandlerConfig == nil {
+		return fmt.Errorf("pac handler config not exist")
+	}
+	if c.PacHandlerConfig != nil {
+		if err := c.PacHandlerConfig.Validate(); err != nil {
 			panic(err)
 		}
 	}
 	return nil
 }
 
-func (c *config) Save(configFilePath string) error {
-	f, err := os.Create(configFilePath)
+func (c *config) Save() error {
+	f, err := os.Create(defaultConfPath)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	bs, err := yaml.Marshal(Default())
+	bs, err := yaml.Marshal(c)
 	if err != nil {
 		return err
 	}
@@ -44,8 +49,8 @@ func (c *config) Save(configFilePath string) error {
 	return err
 }
 
-func Init(configFilePath string) {
-	f, err := os.Open(configFilePath)
+func Init() {
+	f, err := os.Open(defaultConfPath)
 	if err != nil {
 		panic(err)
 	}
@@ -66,12 +71,11 @@ func Default() *config {
 	return &config{
 		ListenAddr: "0.0.0.0:8888",
 		DebugMode:  true,
-		MysqlDSN:   "api:api@tcp(127.0.0.1:3306)/api?charset=utf8mb4&parseTime=True&loc=Local",
-		RedisDSN:   "127.0.0.1:6379",
-		ProxyHandlerConfig: &proxyHandlerConfig{
+		MysqlDSN:   "api:api@tcp(10.0.0.2:3306)/api?charset=utf8mb4&parseTime=True&loc=Local",
+		//RedisDSN:   "127.0.0.1:6379",
+		PacHandlerConfig: &pacHandlerConfig{
 			PacGenerateCron: "0 0 * * *",
-			PacFile:         false,
-			PacFilePath:     "",
+			PacProxyAddr:    "SOCKS5 10.0.0.2:1081",
 		},
 	}
 }

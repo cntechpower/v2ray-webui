@@ -89,3 +89,8 @@ func (c *PacContent) UnmarshalBinary(data []byte) error {
 func (c *PacContent) TableName() string {
 	return "pac_contents"
 }
+
+type PacHandlerConfig struct {
+	PacGenerateCron string `validate:"required" form:"cron" json:"cron"`
+	PacProxyAddr    string `validate:"required" form:"proxy_addr" json:"proxy_addr"`
+}

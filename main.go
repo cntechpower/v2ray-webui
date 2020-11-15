@@ -14,7 +14,6 @@ import (
 )
 
 var version string
-var configFilePath string
 var v2rayConfigTemplatePath string
 
 func main() {
@@ -32,11 +31,10 @@ Version: ` + version,
 		Use:   "config",
 		Short: "api config interface",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return config.Default().Save(configFilePath)
+			return config.Default().Save()
 		},
 	}
 	rootCmd.AddCommand(configCmd)
-	rootCmd.PersistentFlags().StringVarP(&configFilePath, "config", "c", "./conf/api.config", "config file path")
 	rootCmd.PersistentFlags().StringVarP(&v2rayConfigTemplatePath, "vtemplate", "v", "./conf/v2ray.json", "v2ray config template file path")
 	if err := rootCmd.Execute(); err != nil {
 		panic(err)
@@ -47,7 +45,7 @@ Version: ` + version,
 func run(_ *cobra.Command, _ []string) {
 	log.InitLogger("")
 	h := log.NewHeader("api-server")
-	config.Init(configFilePath)
+	config.Init()
 	if err := persist.Init(config.Config.MysqlDSN, config.Config.RedisDSN); err != nil {
 		panic(err)
 	}

@@ -26,6 +26,7 @@ class V2raySubscriptions extends React.Component {
       isLoaded: false,
       modalVisible: false,
       data: null,
+      refreshingSubscription: false,
     };
   }
   refreshV2raySubscriptionsList = () => {
@@ -122,6 +123,7 @@ class V2raySubscriptions extends React.Component {
 
   refreshV2raySubscriptions = (name, id) => {
     var self = this;
+    self.setState({ refreshingSubscription: true });
     var data = new FormData();
     data.append("subscription_id", id);
     axios
@@ -142,6 +144,7 @@ class V2raySubscriptions extends React.Component {
       })
       .then(function () {
         self.refreshV2raySubscriptionsList();
+        self.setState({ refreshingSubscription: false });
       });
   };
 
@@ -187,6 +190,7 @@ class V2raySubscriptions extends React.Component {
             btnName="刷新节点"
             confirmTitle="是否刷新此订阅节点?"
             confirmContent={record.id + " : " + record.subscription_name}
+            loading={this.state.refreshingSubscription}
             fnOnOk={() =>
               this.refreshV2raySubscriptions(
                 record.subscription_name,

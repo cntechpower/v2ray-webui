@@ -1,7 +1,6 @@
 import React from "react";
 import "antd/dist/antd.css";
 import api from "../../api/api.js";
-// import "./index.css";
 import ButtonWithConfirm from "../../utils/ButtonWithConfirm";
 import {
   Table,
@@ -95,7 +94,7 @@ class PacWebSites extends React.Component {
       });
   };
 
-  delPacWebsite = (id) => {
+  delPacWebsite = (id, name) => {
     var self = this;
     var data = new FormData();
     data.append("website_id", id);
@@ -105,7 +104,7 @@ class PacWebSites extends React.Component {
         self.openNotificationWithIcon(
           "success",
           "删除网址成功",
-          "成功添加网址: " + id
+          "成功删除网址: " + name
         );
         self.refreshPacWebsitesList();
       })
@@ -139,7 +138,7 @@ class PacWebSites extends React.Component {
             btnName="删除"
             confirmTitle="是否删除此网址?"
             confirmContent={record.url}
-            fnOnOk={() => this.delPacWebsite(record.id)}
+            fnOnOk={() => this.delPacWebsite(record.id, record.url)}
           />
         ),
       },
