@@ -250,6 +250,7 @@ func (h *V2rayHandler) RefreshV2raySubscription(subscriptionId int64) error {
 		return fmt.Errorf("refreshing is already doing")
 	}
 	h.v2raySubscriptionRefreshing.Store(true)
+	defer h.v2raySubscriptionRefreshing.Store(false)
 	header := log.NewHeader("RefreshV2raySubscription")
 	log.Infof(header, "starting fetch subscription %v: %v", subscriptionName, subscriptionUrl)
 	resp, err := http.Get(subscriptionUrl)
