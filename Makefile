@@ -2,11 +2,10 @@ GOPATH= $(shell dirname `pwd`)
 GIT_VERSION = $(shell git rev-parse --abbrev-ref HEAD) $(shell git rev-parse HEAD)
 VERSION=$(shell git rev-parse --short HEAD)
 RPM_VERSION=master
-PROJECT_NAME  = api-server
+PROJECT_NAME  = v2ray-webui
 DOCKER        = $(shell which docker)
 DOCKER-COMPOSE        = $(shell which docker-compose)
 LDFLAGS       = -ldflags "-X 'main.version=\"${RPM_VERSION}-${GIT_VERSION}\"'"
-DOCKER_IMAGE  = 10.0.0.2:5000/actiontech/universe-compiler-go1.11-centos6:v2
 default: build
 
 docker_test:
@@ -14,13 +13,20 @@ docker_test:
 build:
 	mkdir -p bin/
 	go build ${LDFLAGS} -o bin/$(PROJECT_NAME)
-upload: sonar build
+build_arm:
+	mkdir -p bin/
+	GOARCH=arm64 go build ${LDFLAGS} -o bin/$(PROJECT_NAME)
+tar: 
 	cp static/geoip.dat bin/
-	tar -czvf $(PROJECT_NAME)-$(VERSION).tar.gz bin/
-	curl -T  $(PROJECT_NAME)-$(VERSION).tar.gz -u ftp:ftp ftp://10.0.0.2/ci/$(PROJECT_NAME)/
-	curl -T  $(PROJECT_NAME)-$(VERSION).tar.gz -u ftp:ftp ftp://10.0.0.2/ci/$(PROJECT_NAME)/$(PROJECT_NAME)-latest.tar.gz
+	tar -czvf $(PROJECT_NAME)-$(VERSION).tar.gz bin/ conf/ static/
 	rm -rf bin/geoip.dat
-
+tar_arm: 
+	cp static/geoip.dat bin/
+	tar -czvf $(PROJECT_NAME)-$(VERSION)-arm.tar.gz bin/ conf/ static/
+	rm -rf bin/geoip.dat
+tar_x86: build_fe build tar
+tar_arm: build_fe build_arm tar_arm
+tar_all: tar_x86 tar_arm
 build_fe:
 	cd front-end
 	cd front-end && rm -rf node_modules
@@ -30,10 +36,3 @@ build_fe:
 update_fe_in_repo: build_fe
 	rm -rf static/front-end
 	mv front-end/build static/front-end
-sonar:
-	sonar-scanner \
-	 -Dsonar.projectKey=Api-server \
- 	 -Dsonar.sources=. \
- 	 -Dsonar.host.url=http://10.0.0.2:9999 \
- 	 -Dsonar.exclusions=front-end/\*\* \
- 	 -Dsonar.login=4c693670e2d96f386c9f55ae8ac8c37ddd6a5aae
