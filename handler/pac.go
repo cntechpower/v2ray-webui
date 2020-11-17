@@ -48,7 +48,7 @@ type PacHandler struct {
 
 func NewPacHandler() (*PacHandler, error) {
 	currentPac := model.NewPacContent("")
-	if err := persist.MySQL().Order("id desc").Limit(1).Find(&currentPac).Error; err != nil && err != gorm.ErrRecordNotFound {
+	if err := persist.DB.Order("id desc").Limit(1).Find(&currentPac).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
 	h := &PacHandler{
@@ -73,7 +73,8 @@ func NewPacHandler() (*PacHandler, error) {
 }
 
 func (h *PacHandler) ListCustomWebsites() ([]*model.PacWebSite, error) {
-	return persist.GetAllCustomProxyWebsites()
+	res := make([]*model.PacWebSite, 0)
+	return res, persist.DB.Find(&res).Error
 }
 
 func (h *PacHandler) AddCustomWebsite(webSite string) error {
@@ -120,7 +121,7 @@ func (h *PacHandler) UpdateCron(cronString string) error {
 
 func (h *PacHandler) getPacGenerateCmd() (string, error) {
 	domainInDB := make([]*model.PacWebSite, 0)
-	err := persist.MySQL().Find(&domainInDB).Error
+	err := persist.DB.Find(&domainInDB).Error
 	if err != nil {
 		return "", err
 	}

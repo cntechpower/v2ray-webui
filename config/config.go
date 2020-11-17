@@ -15,8 +15,6 @@ var Config *config
 type config struct {
 	ListenAddr       string
 	DebugMode        bool
-	MysqlDSN         string
-	RedisDSN         string
 	PacHandlerConfig *pacHandlerConfig
 }
 
@@ -71,8 +69,6 @@ func Default() *config {
 	return &config{
 		ListenAddr: "0.0.0.0:8888",
 		DebugMode:  true,
-		MysqlDSN:   "api:api@tcp(10.0.0.2:3306)/api?charset=utf8mb4&parseTime=True&loc=Local",
-		//RedisDSN:   "127.0.0.1:6379",
 		PacHandlerConfig: &pacHandlerConfig{
 			PacGenerateCron: "0 0 * * *",
 			PacProxyAddr:    "SOCKS5 10.0.0.2:1081",

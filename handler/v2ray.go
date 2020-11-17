@@ -160,7 +160,7 @@ func (h *V2rayHandler) StopV2ray() error {
 
 func (h *V2rayHandler) GetAllV2rayNodes() ([]*model.V2rayNode, error) {
 	res := make([]*model.V2rayNode, 0)
-	return res, persist.MySQL().Find(&res).Error
+	return res, persist.DB.Find(&res).Error
 }
 
 func (h *V2rayHandler) AddSubscription(subscriptionName, subscriptionAddr string) error {
@@ -175,7 +175,7 @@ func (h *V2rayHandler) DelSubscription(subscriptionId int64) error {
 func (h *V2rayHandler) PingAllV2rayNodes() error {
 	header := log.NewHeader("PingAllV2rayNodes")
 	nodes := make([]*model.V2rayNode, 0)
-	if err := persist.MySQL().Find(&nodes).Error; err != nil {
+	if err := persist.DB.Find(&nodes).Error; err != nil {
 		return err
 	}
 	wg := sync.WaitGroup{}
@@ -229,7 +229,7 @@ func (h *V2rayHandler) PingAllV2rayNodes() error {
 
 func (h *V2rayHandler) GetAllSubscriptions() ([]*model.Subscription, error) {
 	res := make([]*model.Subscription, 0)
-	return res, persist.MySQL().Find(&res).Error
+	return res, persist.DB.Find(&res).Error
 }
 
 func (h *V2rayHandler) EditSubscription(subscriptionId int64, subscriptionName, subscriptionAddr string) error {
@@ -289,12 +289,12 @@ func (h *V2rayHandler) RefreshV2raySubscription(subscriptionId int64) error {
 		}
 		res = append(res, server)
 	}
-	if err := persist.MySQL().Exec("delete from v2ray_nodes where subscription_id =?", subscriptionId).Error; err != nil {
+	if err := persist.DB.Exec("delete from v2ray_nodes where subscription_id =?", subscriptionId).Error; err != nil {
 		log.Errorf(header, "truncate table v2ray_nodes fail: %v", err)
 		return err
 	}
 	for _, server := range res {
-		if err := persist.MySQL().Create(&server).Error; err != nil {
+		if err := persist.DB.Create(&server).Error; err != nil {
 			log.Errorf(header, "save v2ray server to db error: %v", err)
 		}
 	}

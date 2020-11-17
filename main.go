@@ -19,8 +19,8 @@ var v2rayConfigTemplatePath string
 func main() {
 
 	var rootCmd = &cobra.Command{
-		Use:   "api-server",
-		Short: "api-server is private cloud management tool",
+		Use:   "v2ray-webui",
+		Short: "v2ray-webui is v2ray client  management tool",
 		Long: `Manage proxy and many other resources
 Written by dujinyang.
 Version: ` + version,
@@ -28,8 +28,8 @@ Version: ` + version,
 	}
 
 	var configCmd = &cobra.Command{
-		Use:   "config",
-		Short: "api config interface",
+		Use:   "reset",
+		Short: "reset v2ray-webui config",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return config.Default().Save()
 		},
@@ -46,7 +46,7 @@ func run(_ *cobra.Command, _ []string) {
 	log.InitLogger("")
 	h := log.NewHeader("api-server")
 	config.Init()
-	if err := persist.Init(config.Config.MysqlDSN, config.Config.RedisDSN); err != nil {
+	if err := persist.Init(); err != nil {
 		panic(err)
 	}
 	engine := gin.New()
