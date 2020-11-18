@@ -16,16 +16,14 @@ build:
 build_arm:
 	mkdir -p bin/
 	CC=aarch64-linux-gnu-gcc CGO_ENABLED=1 GOARCH=arm64 go build ${LDFLAGS} -o bin/$(PROJECT_NAME)
-tar: 
+tar_x86: build_fe build
 	cp static/geoip.dat bin/
 	tar -czvf $(PROJECT_NAME)-$(VERSION).tar.gz bin/ conf/ static/
 	rm -rf bin/geoip.dat
-tar_arm: 
+tar_arm: build_fe build_arm
 	cp static/geoip.dat bin/
 	tar -czvf $(PROJECT_NAME)-$(VERSION)-arm.tar.gz bin/ conf/ static/
 	rm -rf bin/geoip.dat
-tar_x86: build_fe build tar
-tar_arm: build_fe build_arm tar_arm
 tar_all: tar_x86 tar_arm
 build_fe:
 	cd front-end
