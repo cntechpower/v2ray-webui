@@ -1,4 +1,5 @@
 ## v2ray-webui
+[![Go Report Card](https://goreportcard.com/badge/github.com/cntechpower/v2ray-webui)](https://goreportcard.com/report/github.com/cntechpower/v2ray-webui)
 ### 为何创建这个项目?
 软路由(x86-ubuntu)上原来使用命令行启动 [v2ray](https://github.com/v2ray/v2ray-core) 客户端,日常启动/修改配置需要SSH登陆手动操作.  
 由于不同地区的v2ray服务器有各自的适用场景,所以在使用场景切换时,经常需要大量重复性操作.
