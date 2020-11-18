@@ -46,5 +46,10 @@ jobs:
             tar -czvf v2ray-webui-master.tar.gz bin/ conf/ static/
             rm -rf bin/geoip.dat
 
+    - uses: actions/upload-artifact@v2
+      with:
+            name: my-artifact
+            path: v2ray-webui-master.tar.gz
+
     - name: Test
       run: go test -v .
