@@ -48,7 +48,7 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-            name: my-artifact
+            name: v2ray-webui-master.tar.gz
             path: v2ray-webui-master.tar.gz
 
     - name: Test
