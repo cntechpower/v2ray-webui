@@ -7,3 +7,4 @@ front-end/node_modules/*
 front-end/node_modules
 .scannerwork/
 front-end/.vscode/
+v2ray-webui.db

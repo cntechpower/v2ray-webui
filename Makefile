@@ -12,10 +12,10 @@ docker_test:
 	echo "not supported for now"
 build:
 	mkdir -p bin/
-	go build ${LDFLAGS} -o bin/$(PROJECT_NAME)
+	CGO_ENABLED=1 go build ${LDFLAGS} -o bin/$(PROJECT_NAME)
 build_arm:
 	mkdir -p bin/
-	GOARCH=arm64 go build ${LDFLAGS} -o bin/$(PROJECT_NAME)
+	CC=aarch64-linux-gnu-gcc CGO_ENABLED=1 GOARCH=arm64 go build ${LDFLAGS} -o bin/$(PROJECT_NAME)
 tar: 
 	cp static/geoip.dat bin/
 	tar -czvf $(PROJECT_NAME)-$(VERSION).tar.gz bin/ conf/ static/

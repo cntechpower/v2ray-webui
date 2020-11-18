@@ -1,130 +1,56 @@
 package persist
 
 import (
-	"context"
 	"fmt"
-	"time"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 
 	"cntechpower.com/api-server/log"
-
 	"cntechpower.com/api-server/model"
-	"github.com/go-redis/redis/v8"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
-var db *gorm.DB
-var cache *redis.Client
+var DB *gorm.DB
 
-var ErrDBNotInit = fmt.Errorf("mysql is not init")
+var ErrDBNotInit = fmt.Errorf("sqlite is not init")
 
-func Init(mysqlDsn, redisDsn string) error {
+func Init() error {
 	header := log.NewHeader("persist.Init")
 	var err error
-	db, err = gorm.Open(mysql.Open(mysqlDsn), &gorm.Config{})
+	DB, err = gorm.Open(sqlite.Open("v2ray-webui.db"), &gorm.Config{})
 	if err != nil {
 		return err
 	}
-	if err := db.AutoMigrate(model.GetAllModels()...); err != nil {
+	if err := DB.AutoMigrate(model.GetAllModels()...); err != nil {
 		return err
 	}
-	log.Infof(header, "init mysql success")
-	if redisDsn != "" {
-		cache = redis.NewClient(&redis.Options{
-			Addr:     redisDsn,
-			Password: "", // no password set
-			DB:       0,  // use default DB
-		})
-		if err := cache.Ping(context.Background()).Err(); err != nil {
-			return err
-		}
-		log.Infof(header, "init redis success")
-	}
+	log.Infof(header, "init sqlite success")
+
 	return nil
-}
-
-func MySQL() *gorm.DB {
-	return db
-}
-
-func Redis() *redis.Client {
-	return cache
 }
 
 func Get(m model.Modeler) error {
-	if cache != nil {
-		if err := cache.Get(context.Background(), m.GetCacheKey()).Scan(m); err == nil {
-			return nil
-		}
-	}
-	if err := db.Find(m).Error; err != nil {
-		return err
-	}
-	if cache != nil {
-		cache.Set(context.Background(), m.GetCacheKey(), m, m.GetCacheDuration())
-	}
-	return nil
+	return DB.Find(m).Error
 }
 
 func Create(m model.Modeler) error {
-	if db == nil {
+	if DB == nil {
 		return ErrDBNotInit
 	}
-	if err := db.Create(m).Error; err != nil {
-		return err
-	}
-	if cache != nil {
-		cache.Set(context.Background(), m.GetCacheKey(), m, m.GetCacheDuration())
-	}
-	return nil
+	return DB.Create(m).Error
 }
 
 func Delete(m model.Modeler) error {
-	if db == nil {
+	if DB == nil {
 		return ErrDBNotInit
 	}
-	if err := db.Delete(m).Error; err != nil {
-		return err
-	}
-	if cache != nil {
-		cache.Del(context.Background(), m.GetCacheKey())
-	}
-	return nil
+	return DB.Delete(m).Error
 }
 
 func Save(m model.Modeler) error {
-	if db == nil {
+	if DB == nil {
 		return ErrDBNotInit
 	}
-	if err := db.Save(m).Error; err != nil {
-		return err
-	}
-	if cache != nil {
-		cache.Set(context.Background(), m.GetCacheKey(), m, m.GetCacheDuration())
-	}
-	return nil
-}
+	return DB.Save(m).Error
 
-func BatchGet(ms []model.Modeler) error {
-	backToDBModelers := make([]model.Modeler, 0)
-	if cache != nil {
-		for _, m := range ms {
-			if err := cache.Get(context.Background(), m.GetCacheKey()).Scan(m); err != nil {
-				backToDBModelers = append(backToDBModelers, m)
-			}
-		}
-	}
-
-	if cache != nil && len(backToDBModelers) == 0 {
-		return nil
-	}
-	for _, backToDBModeler := range backToDBModelers {
-		if err := db.Find(backToDBModeler).Error; err != nil {
-			return err
-		}
-		if cache != nil {
-			cache.Set(context.Background(), backToDBModeler.GetCacheKey(), backToDBModeler, time.Minute)
-		}
-	}
-	return nil
 }
