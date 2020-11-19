@@ -36,12 +36,17 @@ jobs:
 
     - name: Build
       run: |
-            make tar_all
+            make tar_all_ci
 
     - uses: actions/upload-artifact@v2
       with:
             name: v2ray-webui-master.tar.gz
-            path: v2ray-webui-*.tar.gz
+            path: v2ray-webui-master.tar.gz
+  
+    - uses: actions/upload-artifact@v2
+      with:
+            name: v2ray-webui-master-arm.tar.gz
+            path: v2ray-webui-master-arm.tar.gz
             
 
     - name: Test
