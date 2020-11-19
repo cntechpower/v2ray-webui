@@ -36,21 +36,13 @@ jobs:
 
     - name: Build
       run: |
-            cd front-end
-            rm -rf node_modules
-            npm install
-            yarn build
-            cd ..
-            mkdir -p bin/
-            CGO_ENABLED=1 go build ${LDFLAGS} -o bin/v2ray-webui
-            cp static/geoip.dat bin/
-            tar -czvf v2ray-webui-master.tar.gz bin/ conf/ static/
-            rm -rf bin/geoip.dat
+            make tar_all
 
     - uses: actions/upload-artifact@v2
       with:
             name: v2ray-webui-master.tar.gz
-            path: v2ray-webui-master.tar.gz
+            path: v2ray-webui-*.tar.gz
+            
 
     - name: Test
       run: go test -v .
