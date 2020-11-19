@@ -24,11 +24,31 @@ tar_arm: build_fe build_arm
 	cp static/geoip.dat bin/
 	tar -czvf $(PROJECT_NAME)-$(VERSION)-arm.tar.gz bin/ conf/ static/
 	rm -rf bin/geoip.dat
+
+tar_x86_ci: build_fe_ci build
+	cp static/geoip.dat bin/
+	tar -czvf $(PROJECT_NAME)-master.tar.gz bin/ conf/ static/
+	rm -rf bin/geoip.dat
+
+tar_arm_ci: build_fe_ci build_arm
+	cp static/geoip.dat bin/
+	tar -czvf $(PROJECT_NAME)-master-arm.tar.gz bin/ conf/ static/
+	rm -rf bin/geoip.dat
+
 tar_all: tar_x86 tar_arm
+
+tar_all_ci: tar_x86_ci tar_arm_ci
+
 build_fe:
 	cd front-end
 	cd front-end && rm -rf node_modules
 	cd front-end && cnpm install
+	cd front-end && yarn build
+
+build_fe_ci:
+	cd front-end
+	cd front-end && rm -rf node_modules
+	cd front-end && npm install
 	cd front-end && yarn build
 
 update_fe_in_repo: build_fe
