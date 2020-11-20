@@ -23,8 +23,7 @@
 
 
 ### 如何安装?
-抱歉当前CI还没有迁移到Github. 目前可以暂时在 [此issue](https://github.com/cntechpower/v2ray-webui/issues/2) 中下载安装包.
-
+请移步Actions中的中的Build, 从Artifacts中下载  
 下载安装包后, 使用如下命令进行安装
 ```sh
 mkdir /usr/local/v2ray-webui
