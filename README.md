@@ -27,7 +27,7 @@
 下载安装包后, 使用如下命令进行安装
 ```sh
 mkdir /usr/local/v2ray-webui
-tar -xvf v2ray-webui-ede294b.tar.gz -C /usr/local/v2ray-webui
+tar -xvf v2ray-webui-master.tar.gz -C /usr/local/v2ray-webui
 cat << EOF > /etc/systemd/system/v2ray-webui.service
 [Unit]
 Description="v2ray-webui - A v2ray web client"
