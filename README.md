@@ -55,11 +55,11 @@ systemctl status v2ray-webui.service
 ```
 
 ### 截图
-![PAC基本配置](./docs/pac_base.png)  
-![PAC自定义站点](./docs/pac_websites.png)  
-![V2ray订阅管理](./docs/v2ray_subscription.png)  
-![V2ray节点管理](./docs/v2ray_nodes.png)
-![V2ray配置模板](./docs/v2ray_config.png)
+![PAC基本配置](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/pac_base.png)  
+![PAC自定义站点](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/pac_websites.png)  
+![V2ray订阅管理](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/v2ray_subscription.png)  
+![V2ray节点管理](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/v2ray_nodes.png)
+![V2ray配置模板](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/v2ray_config.png)
 
 ## 交流QQ群
 QQ群: 172820073  
