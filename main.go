@@ -44,7 +44,7 @@ Version: ` + version,
 
 func run(_ *cobra.Command, _ []string) {
 	log.InitLogger("")
-	h := log.NewHeader("api-server")
+	h := log.NewHeader("v2ray-webui")
 	config.Init()
 	if err := persist.Init(); err != nil {
 		panic(err)
@@ -73,7 +73,9 @@ func run(_ *cobra.Command, _ []string) {
 	tearDownFuncs := make([]func(), 0)
 	tearDownFuncs = append(tearDownFuncs,
 		controller.AddProxyHandler(apiGroup),
-		controller.AddV2rayHandler(apiGroup, v2rayConfigTemplatePath))
+		controller.AddV2rayHandler(apiGroup, v2rayConfigTemplatePath),
+		controller.AddFileHandler(apiGroup),
+	)
 	httpExistChan := make(chan error)
 	go func() {
 		httpExistChan <- engine.Run(config.Config.ListenAddr)
