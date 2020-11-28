@@ -2,7 +2,6 @@ package controller
 
 import (
 	"cntechpower.com/api-server/handler"
-	"cntechpower.com/api-server/model/params"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,11 +24,15 @@ func NewFileController() *FileController {
 }
 
 func (c *FileController) ReadFile(ctx *gin.Context) {
-	param := &params.ReadFileParam{}
-	if err := ctx.Bind(param); err != nil {
+	p := new(struct {
+		Type int64 `form:"type" binding:"required"`
+		From int64 `form:"from"`
+		To   int64 `form:"to" binding:"required"`
+	})
+	if err := ctx.Bind(p); err != nil {
 		return
 	}
 	c.DoStringFunc(ctx, func() (string, error) {
-		return c.service.ReadFile(param.FileName, int(param.From), int(param.To))
+		return c.service.ReadFile(int(p.Type), int(p.From), int(p.To))
 	})
 }

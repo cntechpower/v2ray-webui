@@ -2,9 +2,24 @@ package handler
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strings"
 )
+
+const (
+	v2rayAccessLog  = "v2ray_access.log"
+	v2rayErrorLog   = "v2ray_error.log"
+	generalStdLog   = "std.log"
+	generalErrorLog = "error.log"
+)
+
+var fileNameSlice = [4]string{
+	v2rayAccessLog,
+	v2rayErrorLog,
+	generalStdLog,
+	generalErrorLog,
+}
 
 type FileHandler struct {
 }
@@ -13,7 +28,18 @@ func NewFileHandler() *FileHandler {
 	return &FileHandler{}
 }
 
-func (c *FileHandler) ReadFile(fileName string, from, to int) (string, error) {
+func (c *FileHandler) getFileNameByType(typ int) (string, error) {
+	if typ <= 0 || typ > 3 {
+		return "", fmt.Errorf("no such file type %v", typ)
+	}
+	return fileNameSlice[typ-1], nil
+}
+
+func (c *FileHandler) ReadFile(typ, from, to int) (string, error) {
+	fileName, err := c.getFileNameByType(typ)
+	if err != nil {
+		return "", err
+	}
 	f, err := os.Open(fileName)
 	if err != nil {
 		return "", err
