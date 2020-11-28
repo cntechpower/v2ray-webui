@@ -20,9 +20,9 @@ import (
 	_ "v2ray.com/core/app/proxyman/outbound"
 	v2rayConf "v2ray.com/core/infra/conf/serial"
 
-	"cntechpower.com/api-server/log"
-	"cntechpower.com/api-server/model"
-	"cntechpower.com/api-server/persist"
+	"github.com/cntechpower/v2ray-webui/log"
+	"github.com/cntechpower/v2ray-webui/model"
+	"github.com/cntechpower/v2ray-webui/persist"
 )
 
 type V2rayHandler struct {

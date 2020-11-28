@@ -6,8 +6,8 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"cntechpower.com/api-server/log"
-	"cntechpower.com/api-server/model"
+	"github.com/cntechpower/v2ray-webui/log"
+	"github.com/cntechpower/v2ray-webui/model"
 )
 
 var DB *gorm.DB

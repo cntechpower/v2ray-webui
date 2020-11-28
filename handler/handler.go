@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"cntechpower.com/api-server/model"
+	"github.com/cntechpower/v2ray-webui/model"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
