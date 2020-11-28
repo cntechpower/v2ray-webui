@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 
-	"cntechpower.com/api-server/config"
-	"cntechpower.com/api-server/controller"
-	"cntechpower.com/api-server/log"
-	"cntechpower.com/api-server/persist"
-	"cntechpower.com/api-server/util"
+	"github.com/cntechpower/v2ray-webui/config"
+	"github.com/cntechpower/v2ray-webui/controller"
+	"github.com/cntechpower/v2ray-webui/log"
+	"github.com/cntechpower/v2ray-webui/persist"
+	"github.com/cntechpower/v2ray-webui/util"
 )
 
 var version string

@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"cntechpower.com/api-server/log"
+	"github.com/cntechpower/v2ray-webui/log"
 )
 
 func genErrInvalidIp(ip string) error {

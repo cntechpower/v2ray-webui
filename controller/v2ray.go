@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"cntechpower.com/api-server/handler"
-	"cntechpower.com/api-server/model/params"
+	"github.com/cntechpower/v2ray-webui/handler"
+	"github.com/cntechpower/v2ray-webui/model/params"
 )
 
 func AddV2rayHandler(engine *gin.RouterGroup, templateConfigFilePath string) (tearDown func()) {

@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 
-	"cntechpower.com/api-server/model"
+	"github.com/cntechpower/v2ray-webui/model"
 	"github.com/gin-gonic/gin"
 )
 

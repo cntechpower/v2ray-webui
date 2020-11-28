@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"cntechpower.com/api-server/handler"
+	"github.com/cntechpower/v2ray-webui/handler"
 	"github.com/gin-gonic/gin"
 )
 
