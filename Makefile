@@ -25,12 +25,12 @@ tar_arm: update_fe_in_repo build_arm
 	tar -czvf $(PROJECT_NAME)-$(VERSION)-arm.tar.gz bin/ conf/ static/
 	rm -rf bin/geoip.dat
 
-tar_x86_ci: update_fe_in_repo build
+tar_x86_ci: update_fe_in_repo_ci build
 	cp static/geoip.dat bin/
 	tar -czvf $(PROJECT_NAME)-master.tar.gz bin/ conf/ static/
 	rm -rf bin/geoip.dat
 
-tar_arm_ci: update_fe_in_repo build_arm
+tar_arm_ci: update_fe_in_repo_ci build_arm
 	cp static/geoip.dat bin/
 	tar -czvf $(PROJECT_NAME)-master-arm.tar.gz bin/ conf/ static/
 	rm -rf bin/geoip.dat
@@ -52,5 +52,9 @@ build_fe_ci:
 	cd front-end && yarn build
 
 update_fe_in_repo: build_fe
+	rm -rf static/front-end
+	mv front-end/build static/front-end
+
+update_fe_in_repo_ci: build_fe_ci
 	rm -rf static/front-end
 	mv front-end/build static/front-end
