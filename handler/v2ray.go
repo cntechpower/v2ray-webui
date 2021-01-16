@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -20,7 +19,7 @@ import (
 	_ "v2ray.com/core/app/proxyman/outbound"
 	v2rayConf "v2ray.com/core/infra/conf/serial"
 
-	"github.com/cntechpower/v2ray-webui/log"
+	"github.com/cntechpower/utils/log"
 	"github.com/cntechpower/v2ray-webui/model"
 	"github.com/cntechpower/v2ray-webui/persist"
 )
@@ -81,7 +80,7 @@ func (h *V2rayHandler) validateConfig(config string, node *model.V2rayNode) (*v2
 	config = strings.ReplaceAll(config, "{serverHost}", node.Host)
 	config = strings.ReplaceAll(config, "{serverName}", node.Name)
 	config = strings.ReplaceAll(config, "{serverPath}", node.Path)
-	config = strings.ReplaceAll(config, "9495945", strconv.FormatInt(node.Port, 10))
+	config = strings.ReplaceAll(config, "9495945", string(node.Port))
 	config = strings.ReplaceAll(config, "{serverId}", node.ServerId)
 	log.Infof(header, "validate config: %v", config)
 	return v2rayConf.LoadJSONConfig(strings.NewReader(config))
@@ -129,7 +128,7 @@ func (h *V2rayHandler) StartV2ray() error {
 		return err
 	}
 	if err := server.Start(); err != nil {
-		log.Errorf(header, "Failed to start", err)
+		log.Errorf(header, "Failed to start: %v", err)
 		return err
 	}
 	h.v2rayServer = server
@@ -161,6 +160,10 @@ func (h *V2rayHandler) StopV2ray() error {
 func (h *V2rayHandler) GetAllV2rayNodes() ([]*model.V2rayNode, error) {
 	res := make([]*model.V2rayNode, 0)
 	return res, persist.DB.Find(&res).Error
+}
+
+func (h *V2rayHandler) AddNode(node *model.V2rayNode) error {
+	return persist.DB.Save(node).Error
 }
 
 func (h *V2rayHandler) AddSubscription(subscriptionName, subscriptionAddr string) error {
@@ -262,32 +265,13 @@ func (h *V2rayHandler) RefreshV2raySubscription(subscriptionId int64) error {
 		return fmt.Errorf("http request fail")
 	}
 	res := make([]*model.V2rayNode, 0)
-	decodeBs, err := ioutil.ReadAll(base64.NewDecoder(base64.RawStdEncoding, resp.Body))
+	bs, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		errMsg := fmt.Errorf("decode response body error: %v", err)
-		log.Errorf(header, "%v", errMsg)
-		return errMsg
+		return err
 	}
-
-	for _, line := range strings.Split(string(decodeBs), "\n") {
-		if line == "" {
-			continue
-		}
-		s := strings.TrimRight(strings.TrimPrefix(line, "vmess://"), "=")
-		bs, err := base64.RawStdEncoding.DecodeString(s)
-		if err != nil {
-			return err
-		}
-		if len(bs) == 0 {
-			continue
-		}
-		server := model.NewV2rayNode(subscriptionId, subscriptionName)
-		if err := json.Unmarshal(bs, &server); err != nil {
-			errMsg := fmt.Errorf("unmarshal %v error: %v", string(bs), err)
-			log.Errorf(header, "%v", errMsg)
-			return errMsg
-		}
-		res = append(res, server)
+	res, err = h.decodeSubscription(subscriptionId, subscriptionName, bs)
+	if err != nil {
+		return err
 	}
 	if err := persist.DB.Exec("delete from v2ray_nodes where subscription_id =?", subscriptionId).Error; err != nil {
 		log.Errorf(header, "truncate table v2ray_nodes fail: %v", err)
@@ -309,7 +293,7 @@ func (h *V2rayHandler) UpdateConfig(ConfigContent string) error {
 		testNode = &model.V2rayNode{
 			Host:     "127.0.0.1",
 			Path:     "/test",
-			Port:     9495,
+			Port:     "9495",
 			Name:     "test",
 			ServerId: "aaa",
 		}
@@ -339,11 +323,87 @@ func (h *V2rayHandler) ValidateConfig(ConfigContent string) error {
 		testNode = &model.V2rayNode{
 			Host:     "127.0.0.1",
 			Path:     "/test",
-			Port:     9495,
+			Port:     "9495",
 			Name:     "test",
 			ServerId: "aaa",
 		}
 	}
 	_, err := h.validateConfig(ConfigContent, testNode)
 	return err
+}
+
+func (h *V2rayHandler) decodeSubscription(subscriptionId int64, subscriptionName string, data []byte) (res []*model.V2rayNode, err error) {
+	header := log.NewHeader("decodeSubscription")
+	decodeBs, err := tryDecode(string(data))
+	if err != nil {
+		log.Errorf(header, "decode response body error: %v", err)
+		return
+	}
+
+	var bs []byte
+	for _, line := range split(string(decodeBs)) {
+		if line == "" {
+			continue
+		}
+		//s := strings.TrimRight(strings.TrimPrefix(line, "vmess://"), "=")
+		s := strings.TrimPrefix(line, "vmess://")
+		bs, err = tryDecode(s)
+		if err != nil {
+			header.Errorf("some line decode fail: %v", err)
+			continue
+		}
+		if len(bs) == 0 {
+			continue
+		}
+		server := model.NewV2rayNode(subscriptionId, subscriptionName)
+		if err = json.Unmarshal(bs, &server); err != nil {
+			log.Errorf(header, "unmarshal %v error: %v", string(bs), err)
+			return
+		}
+		res = append(res, server)
+	}
+	return
+}
+
+func tryDecode(str string) (de []byte, err error) {
+	de, err = base64.StdEncoding.DecodeString(str)
+	if err == nil {
+		return
+	}
+
+	de, err = base64.RawStdEncoding.DecodeString(str)
+	if err == nil {
+		return
+	}
+	de, err = base64.URLEncoding.DecodeString(str)
+	if err == nil {
+		return
+	}
+	de, err = base64.RawURLEncoding.DecodeString(str)
+	if err == nil {
+		return
+	}
+
+	return nil, fmt.Errorf("no proper base64 decode method for: " + str)
+}
+
+func encode(str string) string {
+	return base64.StdEncoding.EncodeToString([]byte(str))
+}
+
+var sep = map[rune]bool{
+	' ':  true,
+	'\n': true,
+	',':  true,
+	';':  true,
+	'\t': true,
+	'\f': true,
+	'\v': true,
+	'\r': true,
+}
+
+func split(s string) []string {
+	return strings.FieldsFunc(s, func(r rune) bool {
+		return sep[r]
+	})
 }

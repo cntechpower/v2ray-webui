@@ -22,3 +22,17 @@ type AddV2raySubscriptionParam struct {
 type V2raySwitchNodeParam struct {
 	NodeId int64 `form:"node_id" binding:"required"`
 }
+
+type V2rayAddNodeParam struct {
+	Host     string `form:"host" binding:"required"`
+	Path     string `form:"path" binding:"required"`
+	TLS      string `form:"tls"`
+	Address  string `form:"add"`
+	Port     string `form:"port" binding:"required"`
+	Aid      string `form:"aid"`
+	Net      string `form:"net"`
+	Type     string `form:"type"`
+	V        string `form:"v"`
+	Name     string `form:"name" binding:"required"`
+	ServerId string `form:"server_id" binding:"required"`
+}

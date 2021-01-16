@@ -3,25 +3,44 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 )
 
 type V2rayNode struct {
-	Id               int64  `json:"primary_key"`
-	SubscriptionId   int64  `json:"subscription_id"`
-	SubscriptionName string `json:"subscription_name"`
-	Host             string `json:"host"`
-	Path             string `json:"path"`
-	TLS              string `json:"tls"`
-	Address          string `json:"add"`
-	Port             int64  `json:"port"`
-	Aid              int64  `json:"aid"`
-	Net              string `json:"net"`
-	Type             string `json:"type"`
-	V                string `json:"v"`
-	Name             string `json:"ps"`
-	ServerId         string `json:"id"`
-	PingRTT          int64  `json:"ping_rtt"`
+	Id               int64      `json:"primary_key"`
+	SubscriptionId   int64      `json:"subscription_id"`
+	SubscriptionName string     `json:"subscription_name"`
+	Host             string     `json:"host"`
+	Path             string     `json:"path"`
+	TLS              string     `json:"tls"`
+	Address          string     `json:"add"`
+	Port             FlexString `json:"port"`
+	Aid              FlexString `json:"aid"`
+	Net              string     `json:"net"`
+	Type             string     `json:"type"`
+	V                string     `json:"v"`
+	Name             string     `json:"ps"`
+	ServerId         string     `json:"id"`
+	PingRTT          int64      `json:"ping_rtt"`
+}
+
+// A FlexString is an string that can be unmarshalled from a JSON field
+// that has either a number or a string value.
+// E.g. if the json field contains an string "42", the
+// FlexString value will be "42".
+type FlexString string
+
+func (fi *FlexString) UnmarshalJSON(b []byte) error {
+	if b[0] == '"' { //start with ", it is already a string
+		return json.Unmarshal(b, (*string)(fi))
+	}
+	var i int64
+	if err := json.Unmarshal(b, &i); err != nil {
+		return err
+	}
+	*fi = FlexString(strconv.FormatInt(i, 10))
+	return nil
 }
 
 func NewV2rayNode(subscriptionId int64, subscriptionName string) *V2rayNode {

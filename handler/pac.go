@@ -10,8 +10,8 @@ import (
 	"go.uber.org/atomic"
 	"gorm.io/gorm"
 
+	"github.com/cntechpower/utils/log"
 	"github.com/cntechpower/v2ray-webui/config"
-	"github.com/cntechpower/v2ray-webui/log"
 	"github.com/cntechpower/v2ray-webui/model"
 	"github.com/cntechpower/v2ray-webui/persist"
 )

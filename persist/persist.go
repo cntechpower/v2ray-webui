@@ -6,7 +6,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/cntechpower/v2ray-webui/log"
+	"github.com/cntechpower/utils/log"
 	"github.com/cntechpower/v2ray-webui/model"
 )
 
