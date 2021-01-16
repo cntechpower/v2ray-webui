@@ -3,6 +3,8 @@ package controller
 import (
 	"net/http"
 
+	"github.com/cntechpower/v2ray-webui/model"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/cntechpower/v2ray-webui/handler"
@@ -26,13 +28,16 @@ func AddV2rayHandler(engine *gin.RouterGroup, templateConfigFilePath string) (te
 	v2rayConfigGroup.POST("/validate", controller.ValidateConfig)
 
 	subscriptionGroup := v2rayGroup.Group("/subscription")
-	subscriptionGroup.GET("/nodes/list", controller.GetAllV2rayNodes)
-	subscriptionGroup.POST("/nodes/ping", controller.PingAllV2rayNodes)
 	subscriptionGroup.POST("/add", controller.AddSubscription)
 	subscriptionGroup.POST("/delete", controller.DelSubscription)
 	subscriptionGroup.GET("/list", controller.GetAllSubscriptions)
 	subscriptionGroup.POST("/edit", controller.EditSubscription)
 	subscriptionGroup.POST("/refresh", controller.RefreshV2raySubscription)
+
+	nodesGroup := v2rayGroup.Group("/nodes")
+	nodesGroup.GET("/list", controller.GetAllV2rayNodes)
+	nodesGroup.POST("/ping", controller.PingAllV2rayNodes)
+	nodesGroup.POST("/add", controller.AddV2rayNode)
 
 	return controller.service.TearDown
 
@@ -91,6 +96,30 @@ func (h *V2rayController) ValidateConfig(c *gin.Context) {
 func (h *V2rayController) GetAllV2rayNodes(c *gin.Context) {
 	h.DoJSONFunc(c, func() (interface{}, error) {
 		return h.service.GetAllV2rayNodes()
+	})
+}
+
+func (h *V2rayController) AddV2rayNode(c *gin.Context) {
+	param := &params.V2rayAddNodeParam{}
+	if err := c.Bind(param); err != nil {
+		return
+	}
+	h.DoFunc(c, func() error {
+		return h.service.AddNode(&model.V2rayNode{
+			SubscriptionId:   0,
+			SubscriptionName: "none",
+			Host:             param.Host,
+			Path:             param.Path,
+			TLS:              param.TLS,
+			Address:          param.Address,
+			Port:             model.FlexString(param.Port),
+			Aid:              model.FlexString(param.Aid),
+			Net:              param.Net,
+			Type:             param.Type,
+			V:                param.V,
+			Name:             param.Name,
+			ServerId:         param.ServerId,
+		})
 	})
 }
 

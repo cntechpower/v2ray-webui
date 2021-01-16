@@ -101,7 +101,7 @@ class V2raySubscriptions extends React.Component {
     var data = new FormData();
     data.append("subscription_id", id);
     axios
-      .post(api.delPacWebsiteApi, data)
+      .post(api.delV2raySubscriptionsApi, data)
       .then(function (response) {
         self.openNotificationWithIcon(
           "success",

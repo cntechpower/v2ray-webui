@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 
+	"github.com/cntechpower/utils/log"
+	"github.com/cntechpower/utils/os"
 	"github.com/cntechpower/v2ray-webui/config"
 	"github.com/cntechpower/v2ray-webui/controller"
-	"github.com/cntechpower/v2ray-webui/log"
 	"github.com/cntechpower/v2ray-webui/persist"
-	"github.com/cntechpower/v2ray-webui/util"
 )
 
 var version string
@@ -82,8 +82,8 @@ func run(_ *cobra.Command, _ []string) {
 	}()
 
 	//wait for os kill signal. TODO: graceful shutdown
-	go util.ListenTTINSignalLoop()
-	serverExitChan := util.ListenKillSignal()
+	go os.ListenTTINSignalLoop()
+	serverExitChan := os.ListenKillSignal()
 	select {
 	case <-serverExitChan:
 		log.Infof(h, "Server Existing")

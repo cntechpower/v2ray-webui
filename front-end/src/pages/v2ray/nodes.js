@@ -2,8 +2,19 @@ import React from "react";
 import "antd/dist/antd.css";
 // import "./index.css";
 import ButtonWithConfirm from "../../utils/ButtonWithConfirm";
-import { Table, Result, notification, Button, Space, Divider } from "antd";
-import { CloudSyncOutlined } from "@ant-design/icons";
+import Draggable from "react-draggable";
+import {
+  Table,
+  Result,
+  notification,
+  Button,
+  Space,
+  Modal,
+  Form,
+  Input,
+  Divider,
+} from "antd";
+import { CloudSyncOutlined, PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
 import api from "../../api/api.js";
 
@@ -45,6 +56,49 @@ class V2rayNodes extends React.Component {
       description: message,
     });
   };
+
+  showAddModal = () => {
+    this.setState({
+      modalVisible: true,
+    });
+  };
+
+  hideAddModal = () => {
+    this.setState({
+      modalVisible: false,
+      form: null,
+    });
+  };
+
+  addV2rayNode(nodeName, nodeHost, nodePort, nodePath, nodeServerId) {
+    var self = this;
+    var data = new FormData();
+    data.append("name", nodeName);
+    data.append("host", nodeHost);
+    data.append("port", nodePort);
+    data.append("path", nodePath);
+    data.append("server_id", nodeServerId);
+    axios
+      .post(api.addV2rayManualNodeApi, data)
+      .then(function (response) {
+        self.openNotificationWithIcon(
+          "success",
+          "添加成功",
+          "成功添加节点: " + nodeName
+        );
+      })
+      .catch(function (error) {
+        self.openNotificationWithIcon(
+          "error",
+          "添加失败",
+          "添加节点 " + nodeName + " 失败. " + error.response.data.Message
+        );
+      })
+      .then(function () {
+        self.refreshV2rayNodeList();
+        self.hideAddModal();
+      });
+  }
 
   switchV2rayNode(nodeName, nodeId) {
     var self = this;
@@ -144,7 +198,7 @@ class V2rayNodes extends React.Component {
         ),
       },
     ];
-    const { error, isLoaded, data } = this.state;
+    const { error, isLoaded, data, form } = this.state;
     if (error != null) {
       return (
         <Result
@@ -169,6 +223,110 @@ class V2rayNodes extends React.Component {
             >
               节点测速
             </Button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={this.showAddModal}
+            >
+              添加节点
+            </Button>
+            <Modal
+              title={
+                <div
+                  style={{
+                    width: "100%",
+                    cursor: "move",
+                  }}
+                >
+                  添加节点
+                </div>
+              }
+              visible={this.state.modalVisible}
+              footer={[
+                <Button form="addV2rayNodeForm" key="submit" htmlType="submit">
+                  Submit
+                </Button>,
+              ]}
+              onCancel={this.hideAddModal}
+              modalRender={(modal) => <Draggable>{modal}</Draggable>}
+            >
+              <Form
+                id="addV2rayNodeForm"
+                form={form}
+                layout="vertical"
+                initialValues={{ modifier: "public" }}
+                onFinish={(values) => {
+                  this.addV2rayNode(
+                    values.name,
+                    values.host,
+                    values.port,
+                    values.path,
+                    values.server_id
+                  );
+                }}
+              >
+                <Form.Item
+                  name="name"
+                  label="节点名"
+                  rules={[
+                    {
+                      required: true,
+                      message: "请输入订阅别名!",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="host"
+                  label="节点地址"
+                  rules={[
+                    {
+                      required: true,
+                      message: "请输入正确的节点地址!",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="port"
+                  label="节点端口"
+                  rules={[
+                    {
+                      required: true,
+                      message: "请输入正确的节点端口!",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="path"
+                  label="节点Path"
+                  rules={[
+                    {
+                      required: true,
+                      message: "请输入正确的节点path!",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="server_id"
+                  label="节点server id"
+                  rules={[
+                    {
+                      required: true,
+                      message: "请输入正确的节点server_id!",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Form>
+            </Modal>
           </Space>
           <Divider />
           <Table columns={columns} dataSource={data} loading={!isLoaded} />
