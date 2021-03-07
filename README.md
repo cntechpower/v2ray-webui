@@ -55,6 +55,7 @@ systemctl status v2ray-webui.service
 ```
 
 ### 截图
+![状态信息](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/home.png)
 ![PAC基本配置](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/pac_base.png)  
 ![PAC自定义站点](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/pac_websites.png)  
 ![V2ray订阅管理](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/v2ray_subscription.png)  
