@@ -3,11 +3,12 @@ package controller
 import (
 	"net/http"
 
+	"github.com/cntechpower/v2ray-webui/handler"
+
 	"github.com/cntechpower/v2ray-webui/model"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/cntechpower/v2ray-webui/handler"
 	"github.com/cntechpower/v2ray-webui/model/params"
 )
 
@@ -18,8 +19,8 @@ func AddV2rayHandler(engine *gin.RouterGroup, templateConfigFilePath string) (te
 	}
 
 	v2rayGroup := engine.Group("/v2ray")
-	v2rayGroup.POST("/start", controller.GenericWrapper(controller.service.StartV2ray))
-	v2rayGroup.POST("/stop", controller.GenericWrapper(controller.service.StopV2ray))
+	v2rayGroup.POST("/start", controller.GenericWrapper(handler.V2ray.StartV2ray))
+	v2rayGroup.POST("/stop", controller.GenericWrapper(handler.V2ray.StopV2ray))
 
 	v2rayConfigGroup := v2rayGroup.Group("/config")
 	v2rayConfigGroup.POST("/switch_node", controller.SwitchNode)
@@ -39,23 +40,17 @@ func AddV2rayHandler(engine *gin.RouterGroup, templateConfigFilePath string) (te
 	nodesGroup.POST("/ping", controller.PingAllV2rayNodes)
 	nodesGroup.POST("/add", controller.AddV2rayNode)
 
-	return controller.service.TearDown
+	return handler.V2ray.TearDown
 
 }
 
 type V2rayController struct {
 	*baseController
-	service *handler.V2rayHandler
 }
 
 func NewV2rayController(templateConfigFilePath string) (*V2rayController, error) {
-	service, err := handler.NewV2rayHandler(templateConfigFilePath)
-	if err != nil {
-		return nil, err
-	}
 	return &V2rayController{
 		baseController: &baseController{},
-		service:        service,
 	}, nil
 }
 
@@ -65,12 +60,12 @@ func (h *V2rayController) SwitchNode(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.SwitchNode(param.NodeId)
+		return handler.V2ray.SwitchNode(param.NodeId)
 	})
 }
 
 func (h *V2rayController) GetConfig(c *gin.Context) {
-	c.String(http.StatusOK, h.service.GetV2rayConfigTemplateContent())
+	c.String(http.StatusOK, handler.V2ray.GetV2rayConfigTemplateContent())
 }
 
 func (h *V2rayController) UpdateConfig(c *gin.Context) {
@@ -79,7 +74,7 @@ func (h *V2rayController) UpdateConfig(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.UpdateConfig(param.ConfigContent)
+		return handler.V2ray.UpdateConfig(param.ConfigContent)
 	})
 }
 
@@ -89,13 +84,13 @@ func (h *V2rayController) ValidateConfig(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.ValidateConfig(param.ConfigContent)
+		return handler.V2ray.ValidateConfig(param.ConfigContent)
 	})
 }
 
 func (h *V2rayController) GetAllV2rayNodes(c *gin.Context) {
 	h.DoJSONFunc(c, func() (interface{}, error) {
-		return h.service.GetAllV2rayNodes()
+		return handler.V2ray.GetAllV2rayNodes()
 	})
 }
 
@@ -105,7 +100,7 @@ func (h *V2rayController) AddV2rayNode(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.AddNode(&model.V2rayNode{
+		return handler.V2ray.AddNode(&model.V2rayNode{
 			SubscriptionId:   0,
 			SubscriptionName: "none",
 			Host:             param.Host,
@@ -125,7 +120,7 @@ func (h *V2rayController) AddV2rayNode(c *gin.Context) {
 
 func (h *V2rayController) PingAllV2rayNodes(c *gin.Context) {
 	h.DoFunc(c, func() error {
-		return h.service.PingAllV2rayNodes()
+		return handler.V2ray.PingAllV2rayNodes()
 	})
 }
 
@@ -135,7 +130,7 @@ func (h *V2rayController) AddSubscription(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.AddSubscription(param.SubscriptionName, param.SubscriptionAddr)
+		return handler.V2ray.AddSubscription(param.SubscriptionName, param.SubscriptionAddr)
 	})
 }
 
@@ -145,13 +140,13 @@ func (h *V2rayController) DelSubscription(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.DelSubscription(param.SubscriptionId)
+		return handler.V2ray.DelSubscription(param.SubscriptionId)
 	})
 }
 
 func (h *V2rayController) GetAllSubscriptions(c *gin.Context) {
 	h.DoJSONFunc(c, func() (interface{}, error) {
-		return h.service.GetAllSubscriptions()
+		return handler.V2ray.GetAllSubscriptions()
 	})
 }
 
@@ -161,7 +156,7 @@ func (h *V2rayController) EditSubscription(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.EditSubscription(param.SubscriptionId, param.SubscriptionName, param.SubscriptionAddr)
+		return handler.V2ray.EditSubscription(param.SubscriptionId, param.SubscriptionName, param.SubscriptionAddr)
 	})
 }
 
@@ -171,6 +166,6 @@ func (h *V2rayController) RefreshV2raySubscription(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.RefreshV2raySubscription(param.SubscriptionId)
+		return handler.V2ray.RefreshV2raySubscription(param.SubscriptionId)
 	})
 }

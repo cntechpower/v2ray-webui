@@ -24,7 +24,7 @@ func (h *baseController) DoJSONFunc(c *gin.Context, f func() (interface{}, error
 		c.AbortWithStatusJSON(http.StatusInternalServerError, model.NewGenericStatus(http.StatusInternalServerError, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, model.NewGenericData(http.StatusOK, res))
 }
 
 func (h *baseController) DoStringFunc(c *gin.Context, f func() (string, error)) {

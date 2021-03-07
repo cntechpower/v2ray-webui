@@ -21,21 +21,21 @@ var fileNameSlice = [4]string{
 	generalErrorLog,
 }
 
-type FileHandler struct {
+type fileHandler struct {
 }
 
-func NewFileHandler() *FileHandler {
-	return &FileHandler{}
+func newFileHandler() *fileHandler {
+	return &fileHandler{}
 }
 
-func (c *FileHandler) getFileNameByType(typ int) (string, error) {
+func (c *fileHandler) getFileNameByType(typ int) (string, error) {
 	if typ <= 0 || typ > 3 {
 		return "", fmt.Errorf("no such file type %v", typ)
 	}
 	return fileNameSlice[typ-1], nil
 }
 
-func (c *FileHandler) ReadFile(typ, from, to int) (string, error) {
+func (c *fileHandler) Read(typ, from, to int) (string, error) {
 	fileName, err := c.getFileNameByType(typ)
 	if err != nil {
 		return "", err

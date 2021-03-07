@@ -14,13 +14,10 @@ func AddFileHandler(engine *gin.RouterGroup) (teardownFunc func()) {
 
 type FileController struct {
 	*baseController
-	service *handler.FileHandler
 }
 
 func NewFileController() *FileController {
-	return &FileController{
-		service: handler.NewFileHandler(),
-	}
+	return &FileController{}
 }
 
 func (c *FileController) ReadFile(ctx *gin.Context) {
@@ -33,6 +30,6 @@ func (c *FileController) ReadFile(ctx *gin.Context) {
 		return
 	}
 	c.DoStringFunc(ctx, func() (string, error) {
-		return c.service.ReadFile(int(p.Type), int(p.From), int(p.To))
+		return handler.File.Read(int(p.Type), int(p.From), int(p.To))
 	})
 }

@@ -15,6 +15,25 @@ func init() {
 	checker = validator.New()
 }
 
+var Pac *PacHandler
+var Status *statusHandler
+var V2ray *v2rayHandler
+var File *fileHandler
+
+func Init(v2rayTemplateConfigFilePath string) (err error) {
+	Status = newStatusHandler()
+	Pac, err = newPacHandler()
+	if err != nil {
+		return
+	}
+	V2ray, err = newV2rayHandler(v2rayTemplateConfigFilePath)
+	if err != nil {
+		return
+	}
+	File = newFileHandler()
+	return
+}
+
 type baseHandler struct {
 }
 

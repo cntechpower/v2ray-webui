@@ -42,8 +42,8 @@ class SiderBar extends React.Component {
             defaultOpenKeys={new Array(openKey)}
             mode="inline"
           >
-            <Menu.Item key="1" icon={<PieChartOutlined />}>
-              系统状态
+            <Menu.Item key="home" icon={<PieChartOutlined />}>
+              <Link to="/home">系统状态</Link>
             </Menu.Item>
             <SubMenu key="pac" icon={<DesktopOutlined />} title="PAC管理">
               <Menu.Item key="pac_config">
@@ -77,7 +77,7 @@ class SiderBar extends React.Component {
             </div>
           </Content>
           <Footer style={{ textAlign: "center" }}>
-            Ant Design ©2018 Created by Ant UED
+            ©2021 root@cntechpower.com
           </Footer>
         </Layout>
       </Layout>

@@ -46,27 +46,21 @@ func AddProxyHandler(engine *gin.RouterGroup) (teardownFunc func()) {
 
 type PacController struct {
 	*baseController
-	service *handler.PacHandler
 }
 
 func NewPacController() (*PacController, error) {
-	service, err := handler.NewPacHandler()
-	if err != nil {
-		return nil, err
-	}
 	return &PacController{
 		baseController: &baseController{},
-		service:        service,
 	}, nil
 }
 
 func (h *PacController) GetCurrentPAC(c *gin.Context) {
-	c.String(http.StatusOK, h.service.GetCurrentPAC())
+	c.String(http.StatusOK, handler.Pac.GetCurrentPAC())
 }
 
 func (h *PacController) ManualGeneratePac(c *gin.Context) {
 	h.DoFunc(c, func() error {
-		return h.service.ManualGeneratePac()
+		return handler.Pac.ManualGeneratePac()
 	})
 }
 
@@ -76,17 +70,17 @@ func (h *PacController) UpdateCron(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.UpdateCron(param.CronString)
+		return handler.Pac.UpdateCron(param.CronString)
 	})
 }
 
 func (h *PacController) GetCurrentCron(c *gin.Context) {
-	c.String(http.StatusOK, h.service.GetCurrentCron())
+	c.String(http.StatusOK, handler.Pac.GetCurrentCron())
 }
 
 func (h *PacController) ListCustomWebsites(c *gin.Context) {
 	h.DoJSONFunc(c, func() (interface{}, error) {
-		res, err := h.service.ListCustomWebsites()
+		res, err := handler.Pac.ListCustomWebsites()
 		if err != nil {
 			return nil, err
 		}
@@ -100,7 +94,7 @@ func (h *PacController) AddCustomWebsites(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.AddCustomWebsite(param.WebSite)
+		return handler.Pac.AddCustomWebsite(param.WebSite)
 	})
 }
 
@@ -110,7 +104,7 @@ func (h *PacController) DelCustomWebsites(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.DelCustomWebsites(param.WebSiteId)
+		return handler.Pac.DelCustomWebsites(param.WebSiteId)
 	})
 }
 
@@ -120,12 +114,12 @@ func (h *PacController) UpdateConfig(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return h.service.UpdateConfig(param)
+		return handler.Pac.UpdateConfig(param)
 	})
 }
 
 func (h *PacController) GetConfig(c *gin.Context) {
 	h.DoJSONFunc(c, func() (interface{}, error) {
-		return h.service.GetConfig()
+		return handler.Pac.GetConfig()
 	})
 }

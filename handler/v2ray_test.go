@@ -10,7 +10,7 @@ import (
 
 func TestSubscriptionParse(t *testing.T) {
 	log.InitLogger("")
-	s, err := NewV2rayHandler("/tmp/v2ray.txt")
+	s, err := newV2rayHandler("/tmp/v2ray.txt")
 	if !assert.Equal(t, nil, err) {
 		t.FailNow()
 	}

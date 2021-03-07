@@ -68,6 +68,26 @@ func (s *V2rayNode) TableName() string {
 	return "v2ray_nodes"
 }
 
+func (s *V2rayNode) DeepCopy() *V2rayNode {
+	return &V2rayNode{
+		Id:               s.Id,
+		SubscriptionId:   s.SubscriptionId,
+		SubscriptionName: s.SubscriptionName,
+		Host:             s.Host,
+		Path:             s.Path,
+		TLS:              s.TLS,
+		Address:          s.Address,
+		Port:             s.Port,
+		Aid:              s.Aid,
+		Net:              s.Net,
+		Type:             s.Type,
+		V:                s.V,
+		Name:             s.Name,
+		ServerId:         s.ServerId,
+		PingRTT:          s.PingRTT,
+	}
+}
+
 type Subscription struct {
 	Id   int64  `json:"id"`
 	Name string `json:"subscription_name"`
@@ -98,4 +118,14 @@ func (s *Subscription) UnmarshalBinary(data []byte) error {
 
 func (s *Subscription) TableName() string {
 	return "v2ray_subscriptions"
+}
+
+type V2rayCoreStatus struct {
+	StartTime string `json:"start_time"`
+}
+
+type V2rayStatus struct {
+	CurrentNode *V2rayNode       `json:"current_node"`
+	Core        *V2rayCoreStatus `json:"v2ray_core"`
+	RefreshTime string           `json:"refresh_time"`
 }

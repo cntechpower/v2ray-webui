@@ -21,19 +21,19 @@ const (
 	pacGenerateCommand = `/usr/local/bin/genpac --format pac --gfwlist-proxy '%v' --pac-proxy '%v' --user-rule "%v"`
 )
 
-type CronLogger struct {
+type cronLogger struct {
 	h *log.Header
 }
 
-func NewCronLogger() *CronLogger {
-	return &CronLogger{h: log.NewHeader("cron")}
+func newCronLogger() *cronLogger {
+	return &cronLogger{h: log.NewHeader("cron")}
 }
 
-func (l *CronLogger) Info(msg string, keysAndValues ...interface{}) {
+func (l *cronLogger) Info(msg string, keysAndValues ...interface{}) {
 	log.Infof(l.h, msg, keysAndValues...)
 }
 
-func (l *CronLogger) Error(err error, msg string, keysAndValues ...interface{}) {
+func (l *cronLogger) Error(err error, msg string, keysAndValues ...interface{}) {
 	log.Errorf(l.h, fmt.Sprintf("got error %v, msg: %v", err, msg), keysAndValues...)
 }
 
@@ -46,7 +46,7 @@ type PacHandler struct {
 	proxyAddr   *atomic.String
 }
 
-func NewPacHandler() (*PacHandler, error) {
+func newPacHandler() (*PacHandler, error) {
 	currentPac := model.NewPacContent("")
 	if err := persist.DB.Order("id desc").Limit(1).Find(&currentPac).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
@@ -55,7 +55,7 @@ func NewPacHandler() (*PacHandler, error) {
 		currentPac:  atomic.NewString(currentPac.Content),
 		cronSpec:    atomic.NewString(config.Config.PacHandlerConfig.PacGenerateCron),
 		cronMu:      sync.Mutex{},
-		cron:        cron.New(cron.WithLogger(NewCronLogger())),
+		cron:        cron.New(cron.WithLogger(newCronLogger())),
 		cronEntryId: 0,
 		proxyAddr:   atomic.NewString(config.Config.PacHandlerConfig.PacProxyAddr),
 	}
