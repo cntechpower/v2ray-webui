@@ -1,32 +1,39 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 
+	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v2"
 )
 
 const defaultConfPath = "./conf/api.config"
 
 var Config *config
+var checker *validator.Validate
+
+func init() {
+	checker = validator.New()
+}
 
 type config struct {
-	ListenAddr       string
+	ListenAddr       string `validate:"required"`
 	DebugMode        bool
 	PacHandlerConfig *pacHandlerConfig
 }
 
-func (c *config) Validate() error {
-	if c.ListenAddr == "" {
-		return fmt.Errorf("listen addr is empty")
-	}
-	if c.PacHandlerConfig == nil {
-		return fmt.Errorf("pac handler config not exist")
+type pacHandlerConfig struct {
+	PacGenerateCron string `validate:"required"`
+	PacProxyAddr    string `validate:"required"`
+}
+
+func (c *config) Validate() (err error) {
+	if err = checker.Struct(c); err != nil {
+		return
 	}
 	if c.PacHandlerConfig != nil {
-		if err := c.PacHandlerConfig.Validate(); err != nil {
+		if err := checker.Struct(c.PacHandlerConfig); err != nil {
 			panic(err)
 		}
 	}

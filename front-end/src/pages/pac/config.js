@@ -40,7 +40,7 @@ class PacConfig extends React.Component {
       .then(function (response) {
         self.setState({
           isLoaded: true,
-          config: response.data,
+          config: response.data.data,
         });
       })
       .catch(function (error) {

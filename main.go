@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/cntechpower/v2ray-webui/handler"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
@@ -20,7 +21,7 @@ func main() {
 
 	var rootCmd = &cobra.Command{
 		Use:   "v2ray-webui",
-		Short: "v2ray-webui is v2ray client  management tool",
+		Short: "v2ray-webui is v2ray client management tool",
 		Long: `Manage proxy and many other resources
 Written by dujinyang.
 Version: ` + version,
@@ -49,6 +50,9 @@ func run(_ *cobra.Command, _ []string) {
 	if err := persist.Init(); err != nil {
 		panic(err)
 	}
+	if err := handler.Init(v2rayConfigTemplatePath); err != nil {
+		panic(err)
+	}
 	engine := gin.New()
 	engine.Use(gin.ErrorLogger())
 	if !config.Config.DebugMode {
@@ -75,6 +79,7 @@ func run(_ *cobra.Command, _ []string) {
 		controller.AddProxyHandler(apiGroup),
 		controller.AddV2rayHandler(apiGroup, v2rayConfigTemplatePath),
 		controller.AddFileHandler(apiGroup),
+		controller.AddStatusHandler(apiGroup),
 	)
 	httpExistChan := make(chan error)
 	go func() {

@@ -36,7 +36,7 @@ class V2raySubscriptions extends React.Component {
       .then(function (response) {
         self.setState({
           isLoaded: true,
-          data: response.data,
+          data: response.data.data,
         });
       })
       .catch(function (error) {

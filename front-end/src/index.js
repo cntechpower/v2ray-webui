@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import "./index.css";
 import App from "./App";
+import Home from "./pages/home";
 import V2rayNodes from "./pages/v2ray/nodes";
 import V2raySubscriptions from "./pages/v2ray/subscriptions";
 import V2rayConfig from "./pages/v2ray/config";
@@ -16,6 +17,11 @@ ReactDOM.render(
       {/* A <Switch> looks through its children <Route>s and
             renders the first one that matches the current URL. */}
       <Switch>
+        <Route path="/home">
+          <App openKey="home" selectKey="home">
+            <Home />
+          </App>
+        </Route>
         <Route path="/pac/websites">
           <App openKey="pac" selectKey="pac_websites">
             <PacWebsites />
@@ -42,8 +48,8 @@ ReactDOM.render(
           </App>
         </Route>
         <Route path="/">
-          <App openKey="" selectKey="">
-            home
+          <App openKey="home" selectKey="home">
+            <Home />
           </App>
         </Route>
       </Switch>

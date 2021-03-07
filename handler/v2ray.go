@@ -24,7 +24,7 @@ import (
 	"github.com/cntechpower/v2ray-webui/persist"
 )
 
-type V2rayHandler struct {
+type v2rayHandler struct {
 	*baseHandler
 
 	//v2ray config template
@@ -40,19 +40,24 @@ type V2rayHandler struct {
 
 	//v2rayServer is origin v2ray server struct.
 	//used for control v2ray start/stop
-	v2rayServer   v2ray.Server
-	v2rayServerMu sync.Mutex
+	v2rayServer          v2ray.Server
+	v2rayServerMu        sync.Mutex
+	v2rayServerStartTime time.Time
 
 	//use this to avoid concurrency refreshing Subscription
 	v2raySubscriptionRefreshing atomic.Bool
+
+	//status
+	v2rayStatusRefreshTime time.Time
 }
 
-func NewV2rayHandler(templateConfigFilePath string) (*V2rayHandler, error) {
-	bs, err := ioutil.ReadFile(templateConfigFilePath)
+func newV2rayHandler(templateConfigFilePath string) (h *v2rayHandler, err error) {
+	var bs []byte
+	bs, err = ioutil.ReadFile(templateConfigFilePath)
 	if err != nil {
 		return nil, err
 	}
-	return &V2rayHandler{
+	h = &v2rayHandler{
 		baseHandler:                 &baseHandler{},
 		v2rayConfigTemplateFilePath: templateConfigFilePath,
 		v2rayConfigTemplateContent:  string(bs),
@@ -60,14 +65,18 @@ func NewV2rayHandler(templateConfigFilePath string) (*V2rayHandler, error) {
 		v2rayConfigMu:               sync.Mutex{},
 		v2rayServer:                 nil,
 		v2rayServerMu:               sync.Mutex{},
-	}, nil
+		v2raySubscriptionRefreshing: atomic.Bool{},
+	}
+	go h.refreshStatusLoop()
+	return
+
 }
 
-func (h *V2rayHandler) TearDown() {
+func (h *v2rayHandler) TearDown() {
 	h.v2rayServerMu.Lock()
 	defer h.v2rayServerMu.Unlock()
 	if h.v2rayServer != nil {
-		header := log.NewHeader("V2rayHandler.TearDown")
+		header := log.NewHeader("v2rayHandler.TearDown")
 		log.Infof(header, "stopping v2ray...")
 		_ = h.v2rayServer.Close()
 		h.v2rayServer = nil
@@ -75,8 +84,27 @@ func (h *V2rayHandler) TearDown() {
 	}
 }
 
-func (h *V2rayHandler) validateConfig(config string, node *model.V2rayNode) (*v2ray.Config, error) {
-	header := log.NewHeader("V2rayHandler.validateConfig")
+func (h *v2rayHandler) refreshStatusLoop() {
+	ticker := time.NewTicker(30 * time.Second)
+	header := log.NewHeader("refreshStatusLoop")
+	for range ticker.C {
+		h.refreshCurrentNodePing(header)
+		h.v2rayStatusRefreshTime = time.Now()
+		header.Infof("refreshed status")
+	}
+
+}
+
+func (h *v2rayHandler) refreshCurrentNodePing(header *log.Header) {
+	h.v2rayConfigMu.Lock()
+	defer h.v2rayConfigMu.Unlock()
+	if h.v2rayCurrentNode != nil {
+		_ = h.pingSingleNode(header, h.v2rayCurrentNode)
+	}
+}
+
+func (h *v2rayHandler) validateConfig(config string, node *model.V2rayNode) (*v2ray.Config, error) {
+	header := log.NewHeader("v2rayHandler.validateConfig")
 	config = strings.ReplaceAll(config, "{serverHost}", node.Host)
 	config = strings.ReplaceAll(config, "{serverName}", node.Name)
 	config = strings.ReplaceAll(config, "{serverPath}", node.Path)
@@ -87,7 +115,7 @@ func (h *V2rayHandler) validateConfig(config string, node *model.V2rayNode) (*v2
 
 }
 
-func (h *V2rayHandler) SwitchNode(nodeId int64) error {
+func (h *v2rayHandler) SwitchNode(nodeId int64) error {
 	node := &model.V2rayNode{
 		Id: nodeId,
 	}
@@ -108,7 +136,7 @@ func (h *V2rayHandler) SwitchNode(nodeId int64) error {
 	return h.StartV2ray()
 }
 
-func (h *V2rayHandler) StartV2ray() error {
+func (h *v2rayHandler) StartV2ray() error {
 	header := log.NewHeader("StartV2ray")
 	h.v2rayServerMu.Lock()
 	defer h.v2rayServerMu.Unlock()
@@ -132,6 +160,7 @@ func (h *V2rayHandler) StartV2ray() error {
 		return err
 	}
 	h.v2rayServer = server
+	h.v2rayServerStartTime = time.Now()
 	log.Infof(header, "started")
 
 	// FROM v2ray: Explicitly triggering GC to remove garbage from config loading.
@@ -141,7 +170,7 @@ func (h *V2rayHandler) StartV2ray() error {
 
 var ErrV2rayNotStarted = fmt.Errorf("v2ray server is not started")
 
-func (h *V2rayHandler) StopV2ray() error {
+func (h *v2rayHandler) StopV2ray() error {
 	h.v2rayServerMu.Lock()
 	defer h.v2rayServerMu.Unlock()
 	if h.v2rayServer == nil {
@@ -157,25 +186,25 @@ func (h *V2rayHandler) StopV2ray() error {
 	return nil
 }
 
-func (h *V2rayHandler) GetAllV2rayNodes() ([]*model.V2rayNode, error) {
+func (h *v2rayHandler) GetAllV2rayNodes() ([]*model.V2rayNode, error) {
 	res := make([]*model.V2rayNode, 0)
 	return res, persist.DB.Find(&res).Error
 }
 
-func (h *V2rayHandler) AddNode(node *model.V2rayNode) error {
+func (h *v2rayHandler) AddNode(node *model.V2rayNode) error {
 	return persist.DB.Save(node).Error
 }
 
-func (h *V2rayHandler) AddSubscription(subscriptionName, subscriptionAddr string) error {
+func (h *v2rayHandler) AddSubscription(subscriptionName, subscriptionAddr string) error {
 	return persist.Save(model.NewSubscription(subscriptionName, subscriptionAddr))
 }
 
-func (h *V2rayHandler) DelSubscription(subscriptionId int64) error {
+func (h *v2rayHandler) DelSubscription(subscriptionId int64) error {
 	return persist.Delete(&model.Subscription{Id: subscriptionId})
 
 }
 
-func (h *V2rayHandler) PingAllV2rayNodes() error {
+func (h *v2rayHandler) PingAllV2rayNodes() error {
 	header := log.NewHeader("PingAllV2rayNodes")
 	nodes := make([]*model.V2rayNode, 0)
 	if err := persist.DB.Find(&nodes).Error; err != nil {
@@ -186,42 +215,7 @@ func (h *V2rayHandler) PingAllV2rayNodes() error {
 		wg.Add(1)
 		n := node
 		go func() {
-			p, err := ping.NewPinger(n.Host)
-			if err != nil {
-				n.PingRTT = 999
-				if err := persist.Save(n); err != nil {
-					log.Errorf(header, "save result to db error: %v", err)
-				}
-				wg.Done()
-				return
-			}
-			totalMs := int64(0)
-			totalCount := int64(0)
-			totalMu := sync.Mutex{}
-			p.Count = 9
-			p.Timeout = time.Second * 10
-			p.OnRecv = func(packet *ping.Packet) {
-				totalMu.Lock()
-				totalMs += packet.Rtt.Milliseconds()
-				totalCount += 1
-				totalMu.Unlock()
-			}
-			if err := p.Run(); err != nil {
-				n.PingRTT = 999
-				if err := persist.Save(n); err != nil {
-					log.Errorf(header, "save result to db error: %v", err)
-				}
-				wg.Done()
-				return
-			}
-			if totalCount == 0 {
-				n.PingRTT = 999
-			} else {
-				n.PingRTT = totalMs / totalCount
-			}
-			if err := persist.Save(n); err != nil {
-				log.Errorf(header, "save result to db error: %v", err)
-			}
+			_ = h.pingSingleNode(header, n)
 			wg.Done()
 		}()
 	}
@@ -230,19 +224,58 @@ func (h *V2rayHandler) PingAllV2rayNodes() error {
 
 }
 
-func (h *V2rayHandler) GetAllSubscriptions() ([]*model.Subscription, error) {
+func (h *v2rayHandler) pingSingleNode(header *log.Header, n *model.V2rayNode) (err error) {
+	var p *ping.Pinger
+	p, err = ping.NewPinger(n.Host)
+	if err != nil {
+		n.PingRTT = 999
+		if err := persist.Save(n); err != nil {
+			log.Errorf(header, "save result to db error: %v", err)
+		}
+		return
+	}
+	totalMs := int64(0)
+	totalCount := int64(0)
+	totalMu := sync.Mutex{}
+	p.Count = 9
+	p.Timeout = time.Second * 10
+	p.OnRecv = func(packet *ping.Packet) {
+		totalMu.Lock()
+		totalMs += packet.Rtt.Milliseconds()
+		totalCount += 1
+		totalMu.Unlock()
+	}
+	if err = p.Run(); err != nil {
+		n.PingRTT = 999
+		if err := persist.Save(n); err != nil {
+			log.Errorf(header, "save result to db error: %v", err)
+		}
+		return
+	}
+	if totalCount == 0 {
+		n.PingRTT = 999
+	} else {
+		n.PingRTT = totalMs / totalCount
+	}
+	if err := persist.Save(n); err != nil {
+		log.Errorf(header, "save result to db error: %v", err)
+	}
+	return
+}
+
+func (h *v2rayHandler) GetAllSubscriptions() ([]*model.Subscription, error) {
 	res := make([]*model.Subscription, 0)
 	return res, persist.DB.Find(&res).Error
 }
 
-func (h *V2rayHandler) EditSubscription(subscriptionId int64, subscriptionName, subscriptionAddr string) error {
+func (h *v2rayHandler) EditSubscription(subscriptionId int64, subscriptionName, subscriptionAddr string) error {
 	subscriptionConfig := model.NewSubscription(subscriptionName, subscriptionAddr)
 	subscriptionConfig.Id = subscriptionId
 	return persist.Save(subscriptionConfig)
 
 }
 
-func (h *V2rayHandler) RefreshV2raySubscription(subscriptionId int64) error {
+func (h *v2rayHandler) RefreshV2raySubscription(subscriptionId int64) error {
 	subscriptionConfig := &model.Subscription{Id: subscriptionId}
 	if err := persist.Get(subscriptionConfig); err != nil {
 		return err
@@ -285,7 +318,7 @@ func (h *V2rayHandler) RefreshV2raySubscription(subscriptionId int64) error {
 	return nil
 }
 
-func (h *V2rayHandler) UpdateConfig(ConfigContent string) error {
+func (h *v2rayHandler) UpdateConfig(ConfigContent string) error {
 	h.v2rayConfigMu.Lock()
 	defer h.v2rayConfigMu.Unlock()
 	testNode := h.v2rayCurrentNode
@@ -311,11 +344,11 @@ func (h *V2rayHandler) UpdateConfig(ConfigContent string) error {
 	return err
 }
 
-func (h *V2rayHandler) GetV2rayConfigTemplateContent() string {
+func (h *v2rayHandler) GetV2rayConfigTemplateContent() string {
 	return h.v2rayConfigTemplateContent
 }
 
-func (h *V2rayHandler) ValidateConfig(ConfigContent string) error {
+func (h *v2rayHandler) ValidateConfig(ConfigContent string) error {
 	h.v2rayConfigMu.Lock()
 	defer h.v2rayConfigMu.Unlock()
 	testNode := h.v2rayCurrentNode
@@ -332,7 +365,7 @@ func (h *V2rayHandler) ValidateConfig(ConfigContent string) error {
 	return err
 }
 
-func (h *V2rayHandler) decodeSubscription(subscriptionId int64, subscriptionName string, data []byte) (res []*model.V2rayNode, err error) {
+func (h *v2rayHandler) decodeSubscription(subscriptionId int64, subscriptionName string, data []byte) (res []*model.V2rayNode, err error) {
 	header := log.NewHeader("decodeSubscription")
 	decodeBs, err := tryDecode(string(data))
 	if err != nil {
@@ -362,6 +395,22 @@ func (h *V2rayHandler) decodeSubscription(subscriptionId int64, subscriptionName
 		}
 		res = append(res, server)
 	}
+	return
+}
+
+func (h *v2rayHandler) Status() (res *model.V2rayStatus, err error) {
+	res = &model.V2rayStatus{}
+	h.v2rayConfigMu.Lock()
+	if h.v2rayCurrentNode != nil {
+		res.CurrentNode = h.v2rayCurrentNode.DeepCopy()
+	}
+	h.v2rayConfigMu.Unlock()
+
+	res.Core = &model.V2rayCoreStatus{}
+	h.v2rayServerMu.Lock()
+	res.Core.StartTime = h.v2rayServerStartTime.Format(time.RFC3339)
+	h.v2rayServerMu.Unlock()
+	res.RefreshTime = h.v2rayStatusRefreshTime.Format(time.RFC3339)
 	return
 }
 
