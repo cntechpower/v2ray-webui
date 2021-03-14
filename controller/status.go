@@ -29,6 +29,6 @@ func (c *statusController) Ping(ctx *gin.Context) {
 
 func (c *statusController) V2ray(ctx *gin.Context) {
 	c.DoJSONFunc(ctx, func() (interface{}, error) {
-		return handler.V2ray.Status()
+		return handler.V2ray.Status(nil, nil)
 	})
 }

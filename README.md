@@ -54,6 +54,15 @@ systemctl status v2ray-webui.service
 
 ```
 
+### 如何升级
+```
+systemctl stop v2ray-webui.service
+mv /usr/local/v2ray-webui /usr/local/v2ray-webui.bak
+tar -xvf v2ray-webui-master.tar.gz -C /usr/local/v2ray-webui
+cp /usr/local/v2ray-webui.bak/v2ray-webui.db /usr/local/v2ray-webui/v2ray-webui.db
+systemctl start v2ray-webui.service
+```
+
 ### 截图
 ![状态信息](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/home.png)
 ![PAC基本配置](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/pac_base.png)  

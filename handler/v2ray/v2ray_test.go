@@ -1,4 +1,4 @@
-package handler
+package v2ray
 
 import (
 	"io/ioutil"
@@ -10,7 +10,7 @@ import (
 
 func TestSubscriptionParse(t *testing.T) {
 	log.InitLogger("")
-	s, err := newV2rayHandler("/tmp/v2ray.txt")
+	s, err := New("/tmp/v2ray.txt")
 	if !assert.Equal(t, nil, err) {
 		t.FailNow()
 	}

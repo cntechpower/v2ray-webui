@@ -8,13 +8,23 @@ import {
   Space,
   Divider,
   Tooltip,
-  Card,
+  Popover,
 } from "antd";
-import { SyncOutlined, BugOutlined, SaveOutlined } from "@ant-design/icons";
-import JSONInput from "react-json-editor-ajrm";
-import locale from "react-json-editor-ajrm/locale/en";
+import {
+  SyncOutlined,
+  BugOutlined,
+  SaveOutlined,
+  QuestionOutlined,
+} from "@ant-design/icons";
+import { Controlled as CodeMirror } from "react-codemirror2";
 import axios from "axios";
 import api from "../../api/api.js";
+
+import "codemirror/lib/codemirror.css";
+import "codemirror/theme/material.css";
+import "codemirror/theme/neat.css";
+import "codemirror/mode/xml/xml.js";
+import "codemirror/mode/javascript/javascript.js";
 
 class V2rayConfig extends React.Component {
   constructor(props) {
@@ -34,7 +44,7 @@ class V2rayConfig extends React.Component {
       .then(function (response) {
         self.setState({
           isLoaded: true,
-          config: response.data,
+          config: response.data.data,
         });
       })
       .catch(function (error) {
@@ -74,7 +84,7 @@ class V2rayConfig extends React.Component {
         self.openNotificationWithIcon(
           "error",
           "修改配置失败",
-          "修改配置失败. " + error.response.data.Message
+          "修改配置失败. " + error.response.data.message
         );
         self.refreshV2rayConfig();
       });
@@ -94,7 +104,7 @@ class V2rayConfig extends React.Component {
         self.openNotificationWithIcon(
           "error",
           "校验配置失败",
-          "配置不合法: " + error.response.data.Message
+          "配置不合法: " + error.response.data.message
         );
       });
   };
@@ -106,6 +116,20 @@ class V2rayConfig extends React.Component {
     if (!isLoaded) {
       return <Skeleton active />;
     }
+    const helpContent = (
+      <div>
+        <p>
+          支持如下几种变量, 填写变量到配置模板中后,
+          会自动替换为当前使用的节点信息:
+        </p>
+        <ul>
+          <li>1. serverHost : 节点地址</li>
+          <li>2. serverName : 节点名</li>
+          <li>3. 9495945 : 节点端口</li>
+          <li>4. serverId : 节点用户ID</li>
+        </ul>
+      </div>
+    );
 
     if (error != null) {
       return (
@@ -147,47 +171,25 @@ class V2rayConfig extends React.Component {
                 保存
               </Button>
             </Tooltip>
+            <Popover content={helpContent} title="配置说明">
+              <Button shape="circle" icon={<QuestionOutlined />}></Button>
+            </Popover>
           </Space>
           <Divider />
-          <div class="row">
-            <div class="column" style={{ float: "left" }}>
-              <JSONInput
-                id="a_unique_id"
-                placeholder={config}
-                locale={locale}
-                theme="light_mitsuketa_tribute"
-                colors={{
-                  string: "#DAA520", // overrides theme colors with whatever color value you want
-                }}
-                onChange={(values) => {
-                  this.setState({
-                    config: values.plain_text,
-                    configValidate: false,
-                  });
-                }}
-                height="750px"
-                width="700px"
-              />
-            </div>
-            <div class="column" style={{ float: "right" }}>
-              <Card
-                title="配置填写帮助"
-                bordered={false}
-                style={{ width: 400 }}
-              >
-                <p>
-                  支持如下几种变量, 填写变量到配置模板中后,
-                  会自动替换为当前使用的节点信息:
-                </p>
-                <ul>
-                  <li>1. serverHost : 服务器地址</li>
-                  <li>2. serverName : 服务器名称</li>
-                  <li>3. 9495945 : 服务器端口</li>
-                  <li>4. serverId : 服务器ID</li>
-                </ul>
-              </Card>
-            </div>
-          </div>
+          <CodeMirror
+            value={config}
+            options={{
+              mode: { name: "javascript", json: true },
+              theme: "material",
+              lineNumbers: true,
+            }}
+            editorDidMount={(editor) => {
+              editor.setSize("100%", "800px");
+            }}
+            onBeforeChange={(editor, data, value) => {
+              this.setState({ config: value, configValidate: false });
+            }}
+          />
         </>
       );
     }

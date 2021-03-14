@@ -76,7 +76,7 @@ func run(_ *cobra.Command, _ []string) {
 	apiGroup := engine.Group("/api")
 	tearDownFuncs := make([]func(), 0)
 	tearDownFuncs = append(tearDownFuncs,
-		controller.AddProxyHandler(apiGroup),
+		controller.AddPacHandler(apiGroup),
 		controller.AddV2rayHandler(apiGroup, v2rayConfigTemplatePath),
 		controller.AddFileHandler(apiGroup),
 		controller.AddStatusHandler(apiGroup),

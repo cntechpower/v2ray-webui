@@ -24,6 +24,7 @@ class PacWebSites extends React.Component {
       error: null,
       isLoaded: false,
       modalVisible: false,
+      pacRefreshing: false,
       data: null,
     };
   }
@@ -42,6 +43,31 @@ class PacWebSites extends React.Component {
           isLoaded: true,
           error,
         });
+      });
+  };
+
+  refreshPac = () => {
+    var self = this;
+    self.openNotificationWithIcon(
+      "info",
+      "更新PAC中",
+      "更新需要一定时间, 请耐心等待"
+    );
+    self.setState({ pacRefreshing: true });
+    axios
+      .post(api.refreshPacApi)
+      .then(function (response) {
+        self.openNotificationWithIcon("success", "更新成功", "");
+      })
+      .catch(function (error) {
+        self.openNotificationWithIcon(
+          "error",
+          "更新失败",
+          error.response.data.message
+        );
+      })
+      .then(function () {
+        self.setState({ pacRefreshing: false });
       });
   };
   componentDidMount() {
@@ -85,7 +111,7 @@ class PacWebSites extends React.Component {
         self.openNotificationWithIcon(
           "error",
           "添加网址失败",
-          "添加网址 " + addr + " 失败. " + error.response.data.Message
+          "添加网址 " + addr + " 失败. " + error.response.data.message
         );
         self.refreshPacWebsitesList();
       })
@@ -112,7 +138,7 @@ class PacWebSites extends React.Component {
         self.openNotificationWithIcon(
           "error",
           "删除网址失败",
-          "删除网址 " + id + " 失败. " + error.response.data.Message
+          "删除网址 " + id + " 失败. " + error.response.data.message
         );
         self.refreshPacWebsitesList();
       });
@@ -174,6 +200,14 @@ class PacWebSites extends React.Component {
             >
               添加网址
             </Button>
+            <Button
+              type="primary"
+              loadings={this.state.pacRefreshing}
+              icon={<SyncOutlined />}
+              onClick={this.refreshPac}
+            >
+              触发PAC生成
+            </Button>
             <Modal
               title={
                 <div
@@ -218,7 +252,7 @@ class PacWebSites extends React.Component {
             </Modal>
           </Space>
           <Divider />
-          <Table columns={columns} dataSource={data} loading={!isLoaded} />;
+          <Table columns={columns} dataSource={data} loading={!isLoaded} />
         </>
       );
     }

@@ -1,4 +1,4 @@
-package handler
+package file
 
 import (
 	"bufio"
@@ -21,21 +21,21 @@ var fileNameSlice = [4]string{
 	generalErrorLog,
 }
 
-type fileHandler struct {
+type Handler struct {
 }
 
-func newFileHandler() *fileHandler {
-	return &fileHandler{}
+func New() *Handler {
+	return &Handler{}
 }
 
-func (c *fileHandler) getFileNameByType(typ int) (string, error) {
+func (c *Handler) getFileNameByType(typ int) (string, error) {
 	if typ <= 0 || typ > 3 {
 		return "", fmt.Errorf("no such file type %v", typ)
 	}
 	return fileNameSlice[typ-1], nil
 }
 
-func (c *fileHandler) Read(typ, from, to int) (string, error) {
+func (c *Handler) Read(typ, from, to int) (string, error) {
 	fileName, err := c.getFileNameByType(typ)
 	if err != nil {
 		return "", err

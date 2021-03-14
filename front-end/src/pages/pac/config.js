@@ -19,6 +19,7 @@ class PacConfig extends React.Component {
     this.state = {
       error: null,
       isLoaded: false,
+      pacRefreshing: false,
       formDisable: true,
       config: null,
     };
@@ -29,7 +30,7 @@ class PacConfig extends React.Component {
       description: message,
     });
   };
-  refreshV2rayConfig = () => {
+  refreshPacConfig = () => {
     var self = this;
     self.setState({
       isLoaded: false,
@@ -55,16 +56,11 @@ class PacConfig extends React.Component {
         });
       });
   };
-
-  updatePacConfig = (config) => {
-    console.log(config);
-  };
-
-  updatePacConfig = (cron, proxy_addr) => {
+  updatePacConfig = (cron, cmd) => {
     var self = this;
     var data = new FormData();
     data.append("cron", cron);
-    data.append("proxy_addr", proxy_addr);
+    data.append("cmd", cmd);
     axios
       .post(api.updatePacConfigApi, data)
       .then(function (response) {
@@ -75,13 +71,38 @@ class PacConfig extends React.Component {
         self.openNotificationWithIcon(
           "error",
           "更新配置失败",
-          "更新配置失败. " + error.response.data.Message
+          "更新配置失败. " + error.response.data.message
         );
         self.refreshV2rayConfig();
       });
   };
+
+  refreshPac = () => {
+    var self = this;
+    self.openNotificationWithIcon(
+      "info",
+      "更新PAC中",
+      "更新需要一定时间, 请耐心等待"
+    );
+    self.setState({ pacRefreshing: true });
+    axios
+      .post(api.refreshPacApi)
+      .then(function (response) {
+        self.openNotificationWithIcon("success", "更新成功", "");
+      })
+      .catch(function (error) {
+        self.openNotificationWithIcon(
+          "error",
+          "更新失败",
+          error.response.data.message
+        );
+      })
+      .then(function () {
+        self.setState({ pacRefreshing: false });
+      });
+  };
   componentDidMount() {
-    this.refreshV2rayConfig();
+    this.refreshPacConfig();
   }
   render() {
     if (!this.state.isLoaded) {
@@ -101,7 +122,7 @@ class PacConfig extends React.Component {
             <Button
               type="primary"
               icon={<SyncOutlined />}
-              onClick={this.refreshV2rayConfig}
+              onClick={this.refreshPacConfig}
             >
               刷新
             </Button>
@@ -124,6 +145,14 @@ class PacConfig extends React.Component {
             >
               保存
             </Button>
+            <Button
+              type="primary"
+              loadings={this.state.pacRefreshing}
+              icon={<SyncOutlined />}
+              onClick={this.refreshPac}
+            >
+              触发PAC生成
+            </Button>
           </Space>
           <Divider />
           <Form
@@ -131,12 +160,12 @@ class PacConfig extends React.Component {
             layout="vertical"
             initialValues={{ modifier: "public" }}
             onFinish={(values) => {
-              this.updatePacConfig(values.cron, values.proxy_addr);
+              this.updatePacConfig(values.cron, values.cmd);
             }}
           >
             <Form.Item
               name="cron"
-              label="自动更新Cron -- (会在cron指定的时间自动使用最新的GFW更新PAC)"
+              label="自动更新周期Cron"
               initialValue={this.state.config.cron}
               rules={[
                 {
@@ -148,13 +177,13 @@ class PacConfig extends React.Component {
               <Input disabled={this.state.formDisable} />
             </Form.Item>
             <Form.Item
-              name="proxy_addr"
-              label="PAC代理地址 -- (请与V2ray配置模板中的端口保持一致)"
-              initialValue={this.state.config.proxy_addr}
+              name="cmd"
+              label="更新PAC命令模板"
+              initialValue={this.state.config.cmd}
               rules={[
                 {
                   required: true,
-                  message: "请输入代理地址!",
+                  message: "请输入命令模板!",
                 },
               ]}
             >

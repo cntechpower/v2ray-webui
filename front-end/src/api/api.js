@@ -7,6 +7,7 @@ if (process.env.NODE_ENV === "development") {
 
 export default {
   //pac pages
+  refreshPacApi: prefix + "/api/pac/update",
   refreshPacWebsitesListApi: prefix + "/api/pac/website/list",
   addPacWebsiteApi: prefix + "/api/pac/website/add",
   delPacWebsiteApi: prefix + "/api/pac/website/del",

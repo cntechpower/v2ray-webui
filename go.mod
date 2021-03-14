@@ -20,6 +20,7 @@ require (
 	go.uber.org/atomic v1.5.0
 	golang.org/x/crypto v0.0.0-20201012173705-84dcc777aaee // indirect
 	golang.org/x/net v0.0.0-20201027133719-8eef5233e2a1 // indirect
+	google.golang.org/grpc v1.34.0
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	gorm.io/driver/sqlite v1.1.3
