@@ -1,10 +1,12 @@
-package handler
+package pac
 
 import (
 	"fmt"
 	"os/exec"
 	"strings"
 	"sync"
+
+	"github.com/go-playground/validator/v10"
 
 	"github.com/robfig/cron/v3"
 	"go.uber.org/atomic"
@@ -21,43 +23,28 @@ const (
 	pacGenerateCommand = `/usr/local/bin/genpac --format pac --gfwlist-proxy '%v' --pac-proxy '%v' --user-rule "%v"`
 )
 
-type cronLogger struct {
-	h *log.Header
+type Handler struct {
+	checker          *validator.Validate
+	currentPac       *atomic.String
+	cronSpec         *atomic.String
+	cronMu           sync.Mutex
+	cron             *cron.Cron
+	cronEntryId      cron.EntryID
+	proxyGenerateCmd *atomic.String
 }
 
-func newCronLogger() *cronLogger {
-	return &cronLogger{h: log.NewHeader("cron")}
-}
-
-func (l *cronLogger) Info(msg string, keysAndValues ...interface{}) {
-	log.Infof(l.h, msg, keysAndValues...)
-}
-
-func (l *cronLogger) Error(err error, msg string, keysAndValues ...interface{}) {
-	log.Errorf(l.h, fmt.Sprintf("got error %v, msg: %v", err, msg), keysAndValues...)
-}
-
-type PacHandler struct {
-	currentPac  *atomic.String
-	cronSpec    *atomic.String
-	cronMu      sync.Mutex
-	cron        *cron.Cron
-	cronEntryId cron.EntryID
-	proxyAddr   *atomic.String
-}
-
-func newPacHandler() (*PacHandler, error) {
+func New() (*Handler, error) {
 	currentPac := model.NewPacContent("")
 	if err := persist.DB.Order("id desc").Limit(1).Find(&currentPac).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
-	h := &PacHandler{
-		currentPac:  atomic.NewString(currentPac.Content),
-		cronSpec:    atomic.NewString(config.Config.PacHandlerConfig.PacGenerateCron),
-		cronMu:      sync.Mutex{},
-		cron:        cron.New(cron.WithLogger(newCronLogger())),
-		cronEntryId: 0,
-		proxyAddr:   atomic.NewString(config.Config.PacHandlerConfig.PacProxyAddr),
+	h := &Handler{
+		currentPac:       atomic.NewString(currentPac.Content),
+		cronSpec:         atomic.NewString(config.Config.PacHandlerConfig.PacGenerateCron),
+		cronMu:           sync.Mutex{},
+		cron:             cron.New(cron.WithLogger(newCronLogger())),
+		cronEntryId:      0,
+		proxyGenerateCmd: atomic.NewString(config.Config.PacHandlerConfig.PacGenerateCmd),
 	}
 	if config.Config.PacHandlerConfig.PacGenerateCron != "" {
 		entryId, err := h.cron.AddFunc(config.Config.PacHandlerConfig.PacGenerateCron, func() {
@@ -72,13 +59,13 @@ func newPacHandler() (*PacHandler, error) {
 	return h, nil
 }
 
-func (h *PacHandler) ListCustomWebsites() ([]*model.PacWebSite, error) {
+func (h *Handler) ListCustomWebsites() ([]*model.PacWebSite, error) {
 	res := make([]*model.PacWebSite, 0)
 	return res, persist.DB.Find(&res).Error
 }
 
-func (h *PacHandler) AddCustomWebsite(webSite string) error {
-	if err := checker.Var(webSite, fqdn); err != nil {
+func (h *Handler) AddCustomWebsite(webSite string) error {
+	if err := h.checker.Var(webSite, fqdn); err != nil {
 		return err
 	}
 
@@ -89,15 +76,15 @@ func (h *PacHandler) AddCustomWebsite(webSite string) error {
 	return nil
 }
 
-func (h *PacHandler) DelCustomWebsites(id int64) error {
+func (h *Handler) DelCustomWebsites(id int64) error {
 	return persist.Delete(model.NewPacWebSiteForDelete(id))
 }
 
-func (h *PacHandler) GetCurrentCron() string {
+func (h *Handler) GetCurrentCron() string {
 	return h.cronSpec.Load()
 }
 
-func (h *PacHandler) UpdateCron(cronString string) error {
+func (h *Handler) UpdateCron(cronString string) error {
 	h.cronMu.Lock()
 	defer h.cronMu.Unlock()
 	entryId, err := h.cron.AddFunc(cronString, func() {
@@ -119,7 +106,7 @@ func (h *PacHandler) UpdateCron(cronString string) error {
 	return nil
 }
 
-func (h *PacHandler) getPacGenerateCmd() (string, error) {
+func (h *Handler) getPacGenerateCmd() (string, error) {
 	domainInDB := make([]*model.PacWebSite, 0)
 	err := persist.DB.Find(&domainInDB).Error
 	if err != nil {
@@ -129,11 +116,10 @@ func (h *PacHandler) getPacGenerateCmd() (string, error) {
 	for _, domain := range domainInDB {
 		domains = append(domains, "||"+domain.WebSiteUrl)
 	}
-	addr := h.proxyAddr.Load()
-	return fmt.Sprintf(pacGenerateCommand, addr, addr, strings.Join(domains, ",")), nil
+	return fmt.Sprintf(h.proxyGenerateCmd.Load(), strings.Join(domains, ",")), nil
 }
 
-func (h *PacHandler) updatePacFunc(cmd string) error {
+func (h *Handler) updatePacFunc(cmd string) error {
 	header := log.NewHeader("update_pac")
 	var err error
 	if cmd == "" {
@@ -159,7 +145,7 @@ func (h *PacHandler) updatePacFunc(cmd string) error {
 	return nil
 }
 
-func (h *PacHandler) ManualGeneratePac() error {
+func (h *Handler) ManualGeneratePac() error {
 	cmd, err := h.getPacGenerateCmd()
 	if err != nil {
 		return err
@@ -167,24 +153,24 @@ func (h *PacHandler) ManualGeneratePac() error {
 	return h.updatePacFunc(cmd)
 }
 
-func (h *PacHandler) GetCurrentPAC() string {
+func (h *Handler) GetCurrentPAC() string {
 	return h.currentPac.Load()
 }
 
-func (h *PacHandler) UpdateConfig(c *model.PacHandlerConfig) error {
-	if c.PacGenerateCron == "" || c.PacProxyAddr == "" {
+func (h *Handler) UpdateConfig(c *model.PacHandlerConfig) error {
+	if c.PacGenerateCron == "" || c.PacGenerateCmd == "" {
 		return fmt.Errorf("at least one config is empty")
 	}
-	h.proxyAddr.Store(c.PacProxyAddr)
+	h.proxyGenerateCmd.Store(c.PacGenerateCmd)
 	h.cronSpec.Store(c.PacGenerateCron)
-	config.Config.PacHandlerConfig.PacProxyAddr = c.PacProxyAddr
+	config.Config.PacHandlerConfig.PacGenerateCmd = c.PacGenerateCmd
 	config.Config.PacHandlerConfig.PacGenerateCron = c.PacGenerateCron
 	return config.Config.Save()
 }
 
-func (h *PacHandler) GetConfig() (*model.PacHandlerConfig, error) {
+func (h *Handler) GetConfig() (*model.PacHandlerConfig, error) {
 	res := &model.PacHandlerConfig{}
-	res.PacProxyAddr = h.proxyAddr.Load()
+	res.PacGenerateCmd = h.proxyGenerateCmd.Load()
 	res.PacGenerateCron = h.cronSpec.Load()
 	return res, nil
 }

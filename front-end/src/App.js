@@ -34,7 +34,7 @@ class SiderBar extends React.Component {
       <Layout style={{ minHeight: "100vh" }}>
         <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
           <div className="logo" onClick={this.goHome}>
-            <h3 class="h3">V2ray管理平台</h3>
+            <h3 class="h3">V2ray</h3>
           </div>
           <Menu
             theme="dark"

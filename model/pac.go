@@ -92,5 +92,5 @@ func (c *PacContent) TableName() string {
 
 type PacHandlerConfig struct {
 	PacGenerateCron string `validate:"required" form:"cron" json:"cron"`
-	PacProxyAddr    string `validate:"required" form:"proxy_addr" json:"proxy_addr"`
+	PacGenerateCmd  string `validate:"required" form:"cmd" json:"cmd"`
 }

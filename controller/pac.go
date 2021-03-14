@@ -10,7 +10,7 @@ import (
 	"github.com/cntechpower/v2ray-webui/model/params"
 )
 
-func AddProxyHandler(engine *gin.RouterGroup) (teardownFunc func()) {
+func AddPacHandler(engine *gin.RouterGroup) (teardownFunc func()) {
 	//proxy handler
 	{
 		pacGroup := engine.Group("/pac")

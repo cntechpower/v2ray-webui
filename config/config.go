@@ -25,7 +25,7 @@ type config struct {
 
 type pacHandlerConfig struct {
 	PacGenerateCron string `validate:"required"`
-	PacProxyAddr    string `validate:"required"`
+	PacGenerateCmd  string
 }
 
 func (c *config) Validate() (err error) {
@@ -78,7 +78,7 @@ func Default() *config {
 		DebugMode:  true,
 		PacHandlerConfig: &pacHandlerConfig{
 			PacGenerateCron: "0 0 * * *",
-			PacProxyAddr:    "SOCKS5 10.0.0.2:1081",
+			PacGenerateCmd:  "/usr/local/bin/genpac --format pac --gfwlist-proxy 'SOCKS5 10.0.0.2:1081' --pac-proxy 'SOCKS5 10.0.0.2:1081' --user-rule '%v'",
 		},
 	}
 }

@@ -124,8 +124,14 @@ type V2rayCoreStatus struct {
 	StartTime string `json:"start_time"`
 }
 
+type Traffic struct {
+	Tag     string `json:"tag"`
+	Traffic int64  `json:"traffic"`
+}
 type V2rayStatus struct {
-	CurrentNode *V2rayNode       `json:"current_node"`
-	Core        *V2rayCoreStatus `json:"v2ray_core"`
-	RefreshTime string           `json:"refresh_time"`
+	CurrentNode     *V2rayNode       `json:"current_node"`
+	Core            *V2rayCoreStatus `json:"v2ray_core"`
+	RefreshTime     string           `json:"refresh_time"`
+	InboundTraffic  []Traffic        `json:"inbound_traffic"`
+	OutboundTraffic []Traffic        `json:"outbound_traffic"`
 }

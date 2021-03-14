@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"net/http"
-
 	"github.com/cntechpower/v2ray-webui/handler"
 
 	"github.com/cntechpower/v2ray-webui/model"
@@ -65,7 +63,10 @@ func (h *V2rayController) SwitchNode(c *gin.Context) {
 }
 
 func (h *V2rayController) GetConfig(c *gin.Context) {
-	c.String(http.StatusOK, handler.V2ray.GetV2rayConfigTemplateContent())
+	h.DoJSONFunc(c, func() (interface{}, error) {
+		return handler.V2ray.GetV2rayConfigTemplateContent(), nil
+	})
+
 }
 
 func (h *V2rayController) UpdateConfig(c *gin.Context) {
