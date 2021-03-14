@@ -39,6 +39,7 @@ func New() (*Handler, error) {
 		return nil, err
 	}
 	h := &Handler{
+		checker:          validator.New(),
 		currentPac:       atomic.NewString(currentPac.Content),
 		cronSpec:         atomic.NewString(config.Config.PacHandlerConfig.PacGenerateCron),
 		cronMu:           sync.Mutex{},
@@ -57,27 +58,6 @@ func New() (*Handler, error) {
 		h.cron.Start()
 	}
 	return h, nil
-}
-
-func (h *Handler) ListCustomWebsites() ([]*model.PacWebSite, error) {
-	res := make([]*model.PacWebSite, 0)
-	return res, persist.DB.Find(&res).Error
-}
-
-func (h *Handler) AddCustomWebsite(webSite string) error {
-	if err := h.checker.Var(webSite, fqdn); err != nil {
-		return err
-	}
-
-	if err := persist.Create(model.NewPacWebSite(webSite)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (h *Handler) DelCustomWebsites(id int64) error {
-	return persist.Delete(model.NewPacWebSiteForDelete(id))
 }
 
 func (h *Handler) GetCurrentCron() string {
