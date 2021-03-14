@@ -58,6 +58,7 @@ systemctl status v2ray-webui.service
 ```
 systemctl stop v2ray-webui.service
 mv /usr/local/v2ray-webui /usr/local/v2ray-webui.bak
+mkdir /usr/local/v2ray-webui
 tar -xvf v2ray-webui-master.tar.gz -C /usr/local/v2ray-webui
 cp /usr/local/v2ray-webui.bak/v2ray-webui.db /usr/local/v2ray-webui/v2ray-webui.db
 systemctl start v2ray-webui.service
