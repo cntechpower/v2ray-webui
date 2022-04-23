@@ -7,8 +7,8 @@ import (
 	"github.com/cntechpower/utils/log"
 	"github.com/cntechpower/v2ray-webui/model"
 
-	v2ray "v2ray.com/core"
-	v2rayConf "v2ray.com/core/infra/conf/serial"
+	v2ray "github.com/v2fly/v2ray-core/v4"
+	v2rayConf "github.com/v2fly/v2ray-core/v4/infra/conf/serial"
 )
 
 func (h *Handler) validateConfig(config string, node *model.V2rayNode) (*v2ray.Config, error) {
@@ -86,6 +86,7 @@ func (h *Handler) ValidateConfig(ConfigContent string) error {
 			Port:     "9495",
 			Name:     "test",
 			ServerId: "aaa",
+			Password: "password",
 		}
 	}
 	_, err := h.validateConfig(ConfigContent, testNode)

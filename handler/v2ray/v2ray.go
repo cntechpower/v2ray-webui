@@ -11,10 +11,9 @@ import (
 	"github.com/cntechpower/v2ray-webui/handler/base"
 	"github.com/cntechpower/v2ray-webui/model"
 
+	v2ray "github.com/v2fly/v2ray-core/v4"
+	_ "github.com/v2fly/v2ray-core/v4/main/distro/all"
 	"go.uber.org/atomic"
-	v2ray "v2ray.com/core"
-	_ "v2ray.com/core/app/proxyman/inbound"
-	_ "v2ray.com/core/app/proxyman/outbound"
 )
 
 type Handler struct {

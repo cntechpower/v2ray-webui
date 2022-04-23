@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	stats "github.com/v2fly/v2ray-core/v4/app/stats/command"
 	"google.golang.org/grpc"
-	stats "v2ray.com/core/app/stats/command"
 
 	"github.com/cntechpower/utils/log"
 	"github.com/cntechpower/v2ray-webui/model"

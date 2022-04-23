@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"v2ray.com/core"
+	core "github.com/v2fly/v2ray-core/v4"
 
 	"github.com/cntechpower/utils/log"
 	"github.com/cntechpower/v2ray-webui/model"
