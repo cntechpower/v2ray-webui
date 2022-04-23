@@ -15,7 +15,7 @@ import (
 )
 
 var version string
-var v2rayConfigTemplatePath string
+var v2rayConfigTemplatePath, v2rayTrojanConfigTemplatePath string
 
 func main() {
 
@@ -37,6 +37,7 @@ Version: ` + version,
 	}
 	rootCmd.AddCommand(configCmd)
 	rootCmd.PersistentFlags().StringVarP(&v2rayConfigTemplatePath, "vtemplate", "v", "./conf/v2ray.json", "v2ray config template file path")
+	rootCmd.PersistentFlags().StringVarP(&v2rayTrojanConfigTemplatePath, "vt_template", "t", "./conf/v2ray_trojan.json", "v2ray trojan config template file path")
 	if err := rootCmd.Execute(); err != nil {
 		panic(err)
 	}
@@ -50,7 +51,7 @@ func run(_ *cobra.Command, _ []string) {
 	if err := persist.Init(); err != nil {
 		panic(err)
 	}
-	if err := handler.Init(v2rayConfigTemplatePath); err != nil {
+	if err := handler.Init(v2rayConfigTemplatePath, v2rayTrojanConfigTemplatePath); err != nil {
 		panic(err)
 	}
 	engine := gin.New()

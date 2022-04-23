@@ -48,7 +48,7 @@ build_fe:
 build_fe_ci:
 	cd front-end
 	cd front-end && rm -rf node_modules
-	cd front-end && npm install
+	cd front-end && npm install --force
 	cd front-end && yarn build
 
 update_fe_in_repo: build_fe

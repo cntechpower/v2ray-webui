@@ -45,14 +45,6 @@ class SiderBar extends React.Component {
             <Menu.Item key="home" icon={<PieChartOutlined />}>
               <Link to="/home">系统状态</Link>
             </Menu.Item>
-            <SubMenu key="pac" icon={<DesktopOutlined />} title="PAC管理">
-              <Menu.Item key="pac_config">
-                <Link to="/pac/config">基本配置</Link>
-              </Menu.Item>
-              <Menu.Item key="pac_websites">
-                <Link to="/pac/websites">网址管理</Link>
-              </Menu.Item>
-            </SubMenu>
             <SubMenu key="v2ray" icon={<GlobalOutlined />} title="V2ray管理">
               <Menu.Item key="v2ray_subs">
                 <Link to="/v2ray/subscriptions">订阅管理</Link>
@@ -61,7 +53,22 @@ class SiderBar extends React.Component {
                 <Link to="/v2ray/servers">节点列表</Link>
               </Menu.Item>
               <Menu.Item key="v2ray_config">
-                <Link to="/v2ray/config">配置模板</Link>
+                <Link to="/v2ray/config">配置模板(Vmess)</Link>
+              </Menu.Item>
+              <Menu.Item key="v2ray_config_trojan">
+                <Link to="/v2ray/config_trojan">配置模板(Trojan)</Link>
+              </Menu.Item>
+            </SubMenu>
+            <SubMenu
+              key="pac"
+              icon={<DesktopOutlined />}
+              title="PAC管理(建设中)"
+            >
+              <Menu.Item key="pac_config">
+                <Link to="/pac/config">基本配置</Link>
+              </Menu.Item>
+              <Menu.Item key="pac_websites">
+                <Link to="/pac/websites">网址管理</Link>
               </Menu.Item>
             </SubMenu>
           </Menu>
@@ -77,7 +84,7 @@ class SiderBar extends React.Component {
             </div>
           </Content>
           <Footer style={{ textAlign: "center" }}>
-            ©2021 root@cntechpower.com
+            ©2022 root@cntechpower.com
           </Footer>
         </Layout>
       </Layout>

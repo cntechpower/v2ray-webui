@@ -23,6 +23,7 @@ func AddV2rayHandler(engine *gin.RouterGroup, templateConfigFilePath string) (te
 	v2rayConfigGroup := v2rayGroup.Group("/config")
 	v2rayConfigGroup.POST("/switch_node", controller.SwitchNode)
 	v2rayConfigGroup.GET("/get", controller.GetConfig)
+	v2rayConfigGroup.GET("/get_trojan", controller.GetTrojanConfig)
 	v2rayConfigGroup.POST("/update", controller.UpdateConfig)
 	v2rayConfigGroup.POST("/validate", controller.ValidateConfig)
 
@@ -66,7 +67,12 @@ func (h *V2rayController) GetConfig(c *gin.Context) {
 	h.DoJSONFunc(c, func() (interface{}, error) {
 		return handler.V2ray.GetV2rayConfigTemplateContent(), nil
 	})
+}
 
+func (h *V2rayController) GetTrojanConfig(c *gin.Context) {
+	h.DoJSONFunc(c, func() (interface{}, error) {
+		return handler.V2ray.GetV2rayTrojanConfigTemplateContent(), nil
+	})
 }
 
 func (h *V2rayController) UpdateConfig(c *gin.Context) {
@@ -75,7 +81,7 @@ func (h *V2rayController) UpdateConfig(c *gin.Context) {
 		return
 	}
 	h.DoFunc(c, func() error {
-		return handler.V2ray.UpdateConfig(param.ConfigContent)
+		return handler.V2ray.UpdateConfig(param.ConfigContent, param.Type)
 	})
 }
 

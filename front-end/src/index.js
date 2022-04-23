@@ -7,6 +7,7 @@ import Home from "./pages/home";
 import V2rayNodes from "./pages/v2ray/nodes";
 import V2raySubscriptions from "./pages/v2ray/subscriptions";
 import V2rayConfig from "./pages/v2ray/config";
+import V2rayTrojanConfig from "./pages/v2ray/config_trojan";
 import PacWebsites from "./pages/pac/websites";
 import PacConfig from "./pages/pac/config";
 import reportWebVitals from "./reportWebVitals";
@@ -45,6 +46,11 @@ ReactDOM.render(
         <Route path="/v2ray/config/">
           <App openKey="v2ray" selectKey="v2ray_config">
             <V2rayConfig />
+          </App>
+        </Route>
+        <Route path="/v2ray/config_trojan/">
+          <App openKey="v2ray" selectKey="v2ray_config_trojan">
+            <V2rayTrojanConfig />
           </App>
         </Route>
         <Route path="/">

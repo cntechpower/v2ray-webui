@@ -23,14 +23,4 @@ func TestSubscriptionParse(t *testing.T) {
 	for _, r := range res {
 		t.Logf("%+v\n", r)
 	}
-
-	bs, err = ioutil.ReadFile("/tmp/v2ray.txt2")
-	if !assert.Equal(t, nil, err) {
-		t.FailNow()
-	}
-	res, err = s.decodeSubscription(1, "test", bs)
-	assert.Equal(t, nil, err)
-	for _, r := range res {
-		t.Logf("%+v\n", r)
-	}
 }

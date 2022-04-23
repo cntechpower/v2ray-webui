@@ -11,10 +11,9 @@ import (
 	"github.com/cntechpower/v2ray-webui/handler/base"
 	"github.com/cntechpower/v2ray-webui/model"
 
+	v2ray "github.com/v2fly/v2ray-core/v4"
+	_ "github.com/v2fly/v2ray-core/v4/main/distro/all"
 	"go.uber.org/atomic"
-	v2ray "v2ray.com/core"
-	_ "v2ray.com/core/app/proxyman/inbound"
-	_ "v2ray.com/core/app/proxyman/outbound"
 )
 
 type Handler struct {
@@ -24,6 +23,9 @@ type Handler struct {
 	//support {placeholder}, any api update to will persist to v2rayConfigTemplateFilePath.
 	v2rayConfigTemplateFilePath string
 	v2rayConfigTemplateContent  string
+
+	v2rayTrojanConfigTemplateFilePath string
+	v2rayTrojanConfigTemplateContent  string
 
 	//v2rayCurrentConfig is template after replace {placeholder}
 	v2rayCurrentConfig string
@@ -44,21 +46,28 @@ type Handler struct {
 	v2rayStatusRefreshTime time.Time
 }
 
-func New(templateConfigFilePath string) (h *Handler, err error) {
-	var bs []byte
+func New(templateConfigFilePath, v2rayTrojanConfigTemplatePath string) (h *Handler, err error) {
+	var bs, bs1 []byte
 	bs, err = ioutil.ReadFile(templateConfigFilePath)
 	if err != nil {
 		return nil, err
 	}
+
+	bs1, err = ioutil.ReadFile(v2rayTrojanConfigTemplatePath)
+	if err != nil {
+		return nil, err
+	}
 	h = &Handler{
-		Handler:                     &base.Handler{},
-		v2rayConfigTemplateFilePath: templateConfigFilePath,
-		v2rayConfigTemplateContent:  string(bs),
-		v2rayConfig:                 nil,
-		v2rayConfigMu:               sync.Mutex{},
-		v2rayServer:                 nil,
-		v2rayServerMu:               sync.Mutex{},
-		v2raySubscriptionRefreshing: atomic.Bool{},
+		Handler:                           &base.Handler{},
+		v2rayConfigTemplateFilePath:       templateConfigFilePath,
+		v2rayConfigTemplateContent:        string(bs),
+		v2rayTrojanConfigTemplateFilePath: v2rayTrojanConfigTemplatePath,
+		v2rayTrojanConfigTemplateContent:  string(bs1),
+		v2rayConfig:                       nil,
+		v2rayConfigMu:                     sync.Mutex{},
+		v2rayServer:                       nil,
+		v2rayServerMu:                     sync.Mutex{},
+		v2raySubscriptionRefreshing:       atomic.Bool{},
 	}
 	go h.refreshStatusLoop()
 	return
