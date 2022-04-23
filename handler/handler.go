@@ -10,12 +10,12 @@ var Pac *pac.Handler
 var V2ray *v2ray.Handler
 var File *file.Handler
 
-func Init(v2rayTemplateConfigFilePath string) (err error) {
+func Init(v2rayTemplateConfigFilePath, v2rayTrojanConfigTemplatePath string) (err error) {
 	Pac, err = pac.New()
 	if err != nil {
 		return
 	}
-	V2ray, err = v2ray.New(v2rayTemplateConfigFilePath)
+	V2ray, err = v2ray.New(v2rayTemplateConfigFilePath, v2rayTrojanConfigTemplatePath)
 	if err != nil {
 		return
 	}

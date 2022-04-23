@@ -30,6 +30,7 @@ export default {
   updateV2rayConfigApi: prefix + "/api/v2ray/config/update",
   validateV2rayConfigApi: prefix + "/api/v2ray/config/validate",
   switchV2rayNodeApi: prefix + "/api/v2ray/config/switch_node",
+  refreshV2rayTrojanConfigApi: prefix + "/api/v2ray/config/get_trojan",
 
   //v2ray status
   refreshStatusApi: prefix + "/api/status/v2ray",

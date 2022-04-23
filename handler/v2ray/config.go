@@ -20,6 +20,7 @@ func (h *Handler) validateConfig(config string, node *model.V2rayNode) (*v2ray.C
 	config = strings.ReplaceAll(config, "{serverHost}", node.Host)
 	config = strings.ReplaceAll(config, "{serverName}", node.Name)
 	config = strings.ReplaceAll(config, "{serverPath}", node.Path)
+	config = strings.ReplaceAll(config, "{serverPass}", node.Password)
 	config = strings.ReplaceAll(config, "9495945", string(node.Port))
 	config = strings.ReplaceAll(config, "{serverId}", node.ServerId)
 	log.Infof(header, "validate config: %v", config)
@@ -27,7 +28,7 @@ func (h *Handler) validateConfig(config string, node *model.V2rayNode) (*v2ray.C
 
 }
 
-func (h *Handler) UpdateConfig(ConfigContent string) error {
+func (h *Handler) UpdateConfig(ConfigContent, typ string) error {
 	h.v2rayConfigMu.Lock()
 	defer h.v2rayConfigMu.Unlock()
 	testNode := h.v2rayCurrentNode
@@ -38,13 +39,26 @@ func (h *Handler) UpdateConfig(ConfigContent string) error {
 			Port:     "9495",
 			Name:     "test",
 			ServerId: "aaa",
+			Password: "aaa",
 		}
 	}
 	if _, err := h.validateConfig(ConfigContent, testNode); err != nil {
 		return err
 	}
-	h.v2rayConfigTemplateContent = ConfigContent
-	f, err := os.Create(h.v2rayConfigTemplateFilePath)
+	var f *os.File
+	var err error
+	switch typ {
+	case model.SubscriptionTypeVmess:
+		h.v2rayConfigTemplateContent = ConfigContent
+		f, err = os.Create(h.v2rayConfigTemplateFilePath)
+	case model.SubscriptionTypeTrojan:
+		h.v2rayTrojanConfigTemplateContent = ConfigContent
+		f, err = os.Create(h.v2rayTrojanConfigTemplateFilePath)
+	default:
+		h.v2rayConfigTemplateContent = ConfigContent
+		f, err = os.Create(h.v2rayConfigTemplateFilePath)
+	}
+
 	if err != nil {
 		return err
 	}
@@ -55,6 +69,10 @@ func (h *Handler) UpdateConfig(ConfigContent string) error {
 
 func (h *Handler) GetV2rayConfigTemplateContent() string {
 	return h.v2rayConfigTemplateContent
+}
+
+func (h *Handler) GetV2rayTrojanConfigTemplateContent() string {
+	return h.v2rayTrojanConfigTemplateContent
 }
 
 func (h *Handler) ValidateConfig(ConfigContent string) error {

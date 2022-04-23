@@ -8,21 +8,30 @@ import (
 )
 
 type V2rayNode struct {
-	Id               int64      `json:"primary_key"`
-	SubscriptionId   int64      `json:"subscription_id"`
-	SubscriptionName string     `json:"subscription_name"`
-	Host             string     `json:"host"`
-	Path             string     `json:"path"`
-	TLS              string     `json:"tls"`
-	Address          string     `json:"add"`
-	Port             FlexString `json:"port"`
-	Aid              FlexString `json:"aid"`
-	Net              string     `json:"net"`
-	Type             string     `json:"type"`
-	V                string     `json:"v"`
-	Name             string     `json:"ps"`
-	ServerId         string     `json:"id"`
-	PingRTT          int64      `json:"ping_rtt"`
+	Id               int64  `json:"primary_key"`
+	SubscriptionId   int64  `json:"subscription_id"`
+	SubscriptionName string `json:"subscription_name"`
+	SubscriptionType string `json:"subscription_type"`
+
+	//props for v2ray start
+	Host     string     `json:"host"`
+	Path     string     `json:"path"`
+	TLS      string     `json:"tls"`
+	Address  string     `json:"add"`
+	Port     FlexString `json:"port"`
+	Aid      FlexString `json:"aid"`
+	Net      string     `json:"net"`
+	Type     string     `json:"type"`
+	V        string     `json:"v"`
+	Name     string     `json:"ps"`
+	ServerId string     `json:"id"`
+	PingRTT  int64      `json:"ping_rtt"`
+	//props for v2ray end
+
+	//props for trojan start
+	Password string `json:"password"`
+	Sni      string `json:"sni"`
+	//props for trojan end
 }
 
 // A FlexString is an string that can be unmarshalled from a JSON field
@@ -43,10 +52,17 @@ func (fi *FlexString) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func NewV2rayNode(subscriptionId int64, subscriptionName string) *V2rayNode {
+const (
+	SubscriptionTypeVmess  = "vmess"
+	SubscriptionTypeTrojan = "trojan"
+)
+
+func NewV2rayNode(subscriptionId int64, subscriptionName, subscriptionType string) *V2rayNode {
 	return &V2rayNode{
 		SubscriptionId:   subscriptionId,
-		SubscriptionName: subscriptionName}
+		SubscriptionName: subscriptionName,
+		SubscriptionType: subscriptionType,
+	}
 }
 
 func (s *V2rayNode) GetCacheKey() string {

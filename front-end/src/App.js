@@ -61,7 +61,10 @@ class SiderBar extends React.Component {
                 <Link to="/v2ray/servers">节点列表</Link>
               </Menu.Item>
               <Menu.Item key="v2ray_config">
-                <Link to="/v2ray/config">配置模板</Link>
+                <Link to="/v2ray/config">配置模板(Vmess)</Link>
+              </Menu.Item>
+              <Menu.Item key="v2ray_config_trojan">
+                <Link to="/v2ray/config_trojan">配置模板(Trojan)</Link>
               </Menu.Item>
             </SubMenu>
           </Menu>
@@ -77,7 +80,7 @@ class SiderBar extends React.Component {
             </div>
           </Content>
           <Footer style={{ textAlign: "center" }}>
-            ©2021 root@cntechpower.com
+            ©2022 root@cntechpower.com
           </Footer>
         </Layout>
       </Layout>

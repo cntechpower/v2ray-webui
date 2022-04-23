@@ -4,6 +4,8 @@ import (
 	"sync"
 	"time"
 
+	"v2ray.com/core"
+
 	"github.com/cntechpower/utils/log"
 	"github.com/cntechpower/v2ray-webui/model"
 	"github.com/cntechpower/v2ray-webui/persist"
@@ -87,14 +89,23 @@ func (h *Handler) refreshCurrentNodePing(header *log.Header) {
 	}
 }
 
-func (h *Handler) SwitchNode(nodeId int64) error {
+func (h *Handler) SwitchNode(nodeId int64) (err error) {
 	node := &model.V2rayNode{
 		Id: nodeId,
 	}
 	if err := persist.Get(node); err != nil {
 		return err
 	}
-	config, err := h.validateConfig(h.v2rayConfigTemplateContent, node)
+	var config *core.Config
+	switch node.SubscriptionType {
+	case model.SubscriptionTypeVmess:
+		config, err = h.validateConfig(h.v2rayConfigTemplateContent, node)
+	case model.SubscriptionTypeTrojan:
+		config, err = h.validateConfig(h.v2rayTrojanConfigTemplateContent, node)
+	default:
+		config, err = h.validateConfig(h.v2rayConfigTemplateContent, node)
+	}
+
 	if err != nil {
 		return err
 	}

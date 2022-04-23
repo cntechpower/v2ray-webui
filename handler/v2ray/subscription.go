@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/cntechpower/utils/log"
@@ -76,6 +78,58 @@ func (h *Handler) RefreshV2raySubscription(subscriptionId int64) error {
 	return nil
 }
 
+func (h *Handler) decodeSubscriptionLine(header *log.Header, subscriptionId int64, subscriptionName, line string) (node *model.V2rayNode, err error) {
+	if strings.HasPrefix(line, "vmess://") {
+		s := strings.TrimPrefix(line, "vmess://")
+		var bs []byte
+		bs, err = tryDecode(s)
+		if err != nil {
+			header.Errorf("some line decode fail: %v", err)
+			return
+		}
+		if len(bs) == 0 {
+			err = fmt.Errorf("some line decode fail: bs nil")
+			header.Errorf("%v", err)
+			return
+		}
+		node = model.NewV2rayNode(subscriptionId, subscriptionName, model.SubscriptionTypeVmess)
+		if err = json.Unmarshal(bs, &node); err != nil {
+			log.Errorf(header, "unmarshal %v error: %v", string(bs), err)
+			return
+		}
+	} else if strings.HasPrefix(line, "trojan://") {
+		var password, host, sni, name, portS string
+		var port int
+		s := strings.TrimPrefix(line, "trojan://")
+		ss1 := strings.Split(s, "@")
+		password, elseWithoutPass := ss1[0], ss1[1]
+		ss2 := strings.Split(elseWithoutPass, "?")
+		hostPort, elseWithoutHostPort := ss2[0], ss2[1]
+		hostPortSlice := strings.Split(hostPort, ":")
+		host, portS = hostPortSlice[0], hostPortSlice[1]
+		port, err = strconv.Atoi(portS)
+		if err != nil {
+			return
+		}
+		ss3 := strings.Split(elseWithoutHostPort, "#")
+		sni = strings.TrimPrefix(ss3[0], "sni=")
+		name, err = url.QueryUnescape(ss3[1])
+		if err != nil {
+			return
+		}
+
+		node = model.NewV2rayNode(subscriptionId, subscriptionName, model.SubscriptionTypeTrojan)
+		node.Host = host
+		node.Password = password
+		node.Port = model.FlexString(strconv.Itoa(port))
+		node.Name = name
+		node.Sni = sni
+	} else {
+		err = fmt.Errorf("unknown subscription type")
+	}
+	return
+}
+
 func (h *Handler) decodeSubscription(subscriptionId int64, subscriptionName string, data []byte) (res []*model.V2rayNode, err error) {
 	header := log.NewHeader("decodeSubscription")
 	decodeBs, err := tryDecode(string(data))
@@ -84,25 +138,15 @@ func (h *Handler) decodeSubscription(subscriptionId int64, subscriptionName stri
 		return
 	}
 
-	var bs []byte
 	for _, line := range split(string(decodeBs)) {
 		if line == "" {
 			continue
 		}
 		//s := strings.TrimRight(strings.TrimPrefix(line, "vmess://"), "=")
-		s := strings.TrimPrefix(line, "vmess://")
-		bs, err = tryDecode(s)
+		server, err := h.decodeSubscriptionLine(header, subscriptionId, subscriptionName, line)
 		if err != nil {
-			header.Errorf("some line decode fail: %v", err)
+			header.Errorf("decodeSubscriptionLine error: %v, line: %v", err, line)
 			continue
-		}
-		if len(bs) == 0 {
-			continue
-		}
-		server := model.NewV2rayNode(subscriptionId, subscriptionName)
-		if err = json.Unmarshal(bs, &server); err != nil {
-			log.Errorf(header, "unmarshal %v error: %v", string(bs), err)
-			return
 		}
 		res = append(res, server)
 	}

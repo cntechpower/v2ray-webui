@@ -2,6 +2,7 @@ package params
 
 type V2rayConfig struct {
 	ConfigContent string `form:"config_content" binding:"required"`
+	Type          string `form:"type"`
 }
 
 type V2raySubscriptionIdParam struct {
