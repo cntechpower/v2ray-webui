@@ -1,5 +1,9 @@
 ## v2ray-webui
 [![Go Report Card](https://goreportcard.com/badge/github.com/cntechpower/v2ray-webui)](https://goreportcard.com/report/github.com/cntechpower/v2ray-webui)  ![Build](https://github.com/cntechpower/v2ray-webui/workflows/Build/badge.svg?branch=main)
+
+# 此项目目前不再维护
+之前喜欢折腾, 现在已切换到使用 [koolshare梅林固件](https://www.koolcenter.com/article/firmware/)
+
 ### 为何创建这个项目?
 软路由(x86-ubuntu)上原来使用命令行启动 [v2ray](https://github.com/v2ray/v2ray-core) 客户端,日常启动/修改配置需要SSH登陆手动操作.  
 由于不同地区的v2ray服务器有各自的适用场景,所以在使用场景切换时,经常需要大量重复性操作.
@@ -71,7 +75,3 @@ systemctl start v2ray-webui.service
 ![V2ray订阅管理](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/v2ray_subscription.png)  
 ![V2ray节点管理](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/v2ray_nodes.png)  
 ![V2ray配置模板](https://cntechpower.oss-cn-shanghai.aliyuncs.com/v2ray-webui/img/v2ray_config.png)  
-
-## 交流QQ群
-QQ群: 172820073  
-欢迎提出意见或建议
